@@ -76,9 +76,10 @@ def generate_list(manifest_dir):
                                 print(' '.join(cmd))
                                 r=sp.run(cmd,capture_output=True)
 
+
                     except Exception as e:
                         print('Unable to extract info from {}'.format(os.path.join(root2, file)))
-                        raise e
+
 
     return data_dict
 
