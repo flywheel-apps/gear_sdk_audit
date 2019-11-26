@@ -28,21 +28,23 @@ def download_repo(refresh):
 
 
 def generate_list(manifest_dir):
-
+    print(manifest_dir)
     # Initialize my Data Dict
-    data_dict = {'gear-name':[],'custom-docker-image':[],'sdk-version':[]}
+    data_dict = {'gear-name':[] ,'custom-docker-image':[], 'sdk-version':[]}
 
     ep = 'flywheel-sdk==(.*?)\\\\r'
 
     print('Gear Name \t image \t\t sdk-version')
     for root, dirs, files in os.walk(manifest_dir):
+        print(dirs)
+
         for dir in dirs:
-
-            for root2,dirs2,files2 in os.walk(dir):
-                for file in files2:
-
+            print(dir)
+            for root2,dirs2,files2 in os.walk(os.path.join(root,dir)):
+                for fl in files2:
+                    file = os.path.join(root2, fl)
                     try:
-                        base,ext = os.path.splitext(file)
+                        base, ext = os.path.splitext(file)
 
                         if ext == '.json':
                             mn = open(file).read()
@@ -54,7 +56,8 @@ def generate_list(manifest_dir):
 
                                 cmd = ['docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
 
-                                r=sp.run(cmd,capture_output=True)
+                                print(' '.join(cmd))
+                                r = sp.run(cmd,capture_output=True)
                                 output = r.stdout
 
                                 match = re.search(ep, output)
@@ -66,6 +69,7 @@ def generate_list(manifest_dir):
                                 print('{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
 
                                 cmd = ['docker', 'image', 'rm', docker_image]
+                                print(' '.join(cmd))
                                 r=sp.run(cmd,capture_output=True)
 
                     except Exception:
