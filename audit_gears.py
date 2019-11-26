@@ -57,23 +57,28 @@ def generate_list(manifest_dir):
                                 cmd = ['docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
 
                                 print(' '.join(cmd))
-                                r = sp.run(cmd,capture_output=True)
-                                output = r.stdout
+                                r = sp.run(cmd, capture_output=True)
+                                output = str(r.stdout)
 
                                 match = re.search(ep, output)
-                                sdk_version = match.group(1)
+                                if match == None:
+                                    sdk_version = 'None'
+                                else:
+                                    sdk_version = match.group(1)
+                                print(sdk_version)
 
                                 data_dict['gear-name'].append(gear_name)
                                 data_dict['custom-docker-image'].append(docker_image)
-                                data_dict['sdk_version'].append(sdk_version)
-                                print('{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
+                                data_dict['sdk-version'].append(sdk_version)
+                                print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
 
                                 cmd = ['docker', 'image', 'rm', docker_image]
                                 print(' '.join(cmd))
                                 r=sp.run(cmd,capture_output=True)
 
-                    except Exception:
+                    except Exception as e:
                         print('Unable to extract info from {}'.format(os.path.join(root2, file)))
+                        raise e
 
     return data_dict
 
