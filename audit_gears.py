@@ -32,7 +32,7 @@ def generate_list(manifest_dir):
     # Initialize my Data Dict
     data_dict = {'gear-name':[] ,'custom-docker-image':[], 'sdk-version':[]}
 
-    ep = 'flywheel-sdk==(.*?)\\\\r'
+    ep = 'flywheel-sdk==(\d\d?.\d\d?.\d\d?)'
 
     print('Gear Name \t image \t\t sdk-version')
     for root, dirs, files in os.walk(manifest_dir):
