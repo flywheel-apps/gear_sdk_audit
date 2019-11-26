@@ -36,51 +36,49 @@ def generate_list(manifest_dir):
 
     print('Gear Name \t image \t\t sdk-version')
     for root, dirs, files in os.walk(manifest_dir):
-        print(dirs)
+        print('\n'+root+'\n')
 
-        for dir in dirs:
-            print(dir)
-            for root2,dirs2,files2 in os.walk(os.path.join(root,dir)):
-                for fl in files2:
-                    file = os.path.join(root2, fl)
-                    try:
-                        base, ext = os.path.splitext(file)
+        for file in files:
+            file = os.path.join(root, file)
+            try:
+                base, ext = os.path.splitext(file)
 
-                        if ext == '.json':
-                            mn = open(file).read()
+                if ext == '.json':
+                    mn = open(file).read()
+                    #print(file)
+                    if mn.find('api-key') != -1:
+                        mn = json.load(open(file))
+                        gear_name = mn['name']
+                        docker_image = mn['custom']['docker-image']
 
-                            if mn.find('api-key') != -1:
-                                mn = json.load(open(os.path.join(root2, file)))
-                                gear_name = mn['name']
-                                docker_image = mn['custom']['docker-image']
+                        cmd = ['docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
 
-                                cmd = ['docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
+                        print(' '.join(cmd))
+                        r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+                        r.wait()
+                        output = str(r.stdout.read())
+                        print(output)
 
-                                print(' '.join(cmd))
-                                r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
-                                r.wait()
-                                output = str(r.stdout.read())
+                        match = re.search(ep, output)
+                        if match == None:
+                            sdk_version = 'None'
+                        else:
+                            sdk_version = match.group(1)
+                        print(sdk_version)
 
-                                match = re.search(ep, output)
-                                if match == None:
-                                    sdk_version = 'None'
-                                else:
-                                    sdk_version = match.group(1)
-                                print(sdk_version)
+                        data_dict['gear-name'].append(gear_name)
+                        data_dict['custom-docker-image'].append(docker_image)
+                        data_dict['sdk-version'].append(sdk_version)
+                        print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
 
-                                data_dict['gear-name'].append(gear_name)
-                                data_dict['custom-docker-image'].append(docker_image)
-                                data_dict['sdk-version'].append(sdk_version)
-                                print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
-
-                                cmd = ['docker', 'image', 'rm', docker_image]
-                                print(' '.join(cmd))
-                                r=sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE,universal_newlines=True)
-                                r.wait()
+                        cmd = ['docker', 'image', 'rm', docker_image]
+                        print(' '.join(cmd))
+                        r=sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE,universal_newlines=True)
+                        r.wait()
 
 
-                    except Exception as e:
-                        print('Unable to extract info from {}'.format(os.path.join(root2, file)))
+            except Exception as e:
+                print('Unable to extract info from {}'.format(os.path.join(root, files)))
 
 
     return data_dict
