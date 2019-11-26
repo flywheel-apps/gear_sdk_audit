@@ -57,8 +57,9 @@ def generate_list(manifest_dir):
                                 cmd = ['docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
 
                                 print(' '.join(cmd))
-                                r = sp.run(cmd, capture_output=True)
-                                output = str(r.stdout)
+                                r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+                                r.wait()
+                                output = str(r.stdout.read())
 
                                 match = re.search(ep, output)
                                 if match == None:
@@ -74,7 +75,8 @@ def generate_list(manifest_dir):
 
                                 cmd = ['docker', 'image', 'rm', docker_image]
                                 print(' '.join(cmd))
-                                r=sp.run(cmd,capture_output=True)
+                                r=sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE,universal_newlines=True)
+                                r.wait()
 
 
                     except Exception as e:
