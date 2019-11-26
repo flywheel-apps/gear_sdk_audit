@@ -30,7 +30,7 @@ def download_repo(refresh):
 def generate_list(manifest_dir):
     print(manifest_dir)
     # Initialize my Data Dict
-    data_dict = {'gear-name':[] ,'custom-docker-image':[], 'sdk-version':[]}
+    data_dict = {'gear-name':[] ,'custom-docker-image':[], 'sdk-version': []}
 
     ep = 'flywheel-sdk==(\d\d?.\d\d?.\d\d?)'
 
