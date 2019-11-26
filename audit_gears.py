@@ -24,7 +24,7 @@ def download_repo(refresh):
         except:
             raise Exception('Couldnt git pull the repo {}'.format(exchange_repo))
 
-    pass
+    return exchange_dir
 
 
 def generate_list(manifest_dir):
@@ -89,11 +89,10 @@ def dict_2_pandas(data):
 def main():
 
 
-    refresh=False
+    refresh = False
 
-    download_repo(refresh)
-
-    manifest_dir = os.path.join(exchange_dir,'gears')
+    exchange_dir = download_repo(refresh)
+    manifest_dir = os.path.join(exchange_dir, 'gears')
 
     if not os.path.exists(manifest_dir):
         raise Exception('No manifest directory found in repo')
