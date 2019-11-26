@@ -49,7 +49,7 @@ def generate_list(manifest_dir):
                         if ext == '.json':
                             mn = open(file).read()
 
-                            if mn.find('api-key'):
+                            if mn.find('api-key') != -1:
                                 mn = json.load(open(os.path.join(root2, file)))
                                 gear_name = mn['name']
                                 docker_image = mn['custom']['docker-image']
