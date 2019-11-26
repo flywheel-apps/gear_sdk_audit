@@ -51,7 +51,7 @@ def generate_list(manifest_dir):
                         gear_name = mn['name']
                         docker_image = mn['custom']['docker-image']
 
-                        cmd = ['docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
+                        cmd = ['sudo', 'docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
 
                         print(' '.join(cmd))
                         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
@@ -71,7 +71,7 @@ def generate_list(manifest_dir):
                         data_dict['sdk-version'].append(sdk_version)
                         print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
 
-                        cmd = ['docker', 'image', 'rm', docker_image]
+                        cmd = ['sudo', 'docker', 'image', 'rm', docker_image]
                         print(' '.join(cmd))
                         r=sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE,universal_newlines=True)
                         r.wait()
