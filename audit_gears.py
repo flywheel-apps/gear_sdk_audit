@@ -9,6 +9,7 @@ import json
 import re
 import csv
 import pickle
+import re
 
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
 pwd = '/Users/davidparker/Documents/Flywheel/SSE/MyWork/gear_sdk_audit'
@@ -27,16 +28,20 @@ def download_repo(refresh):
     return exchange_dir
 
 
-def generate_list(manifest_dir):
+def generate_list(manifest_dir,file_updates):
     print(manifest_dir)
+    repo_dir=os.path.split(manifest_dir)[0]
+    lmd = len(repo_dir)
     # Initialize my Data Dict
-    data_dict = {'gear-name':[] ,'custom-docker-image':[], 'sdk-version': []}
+    data_dict = {'gear-name':[],'gear-label':[],'custom-docker-image':[], 'sdk-version': [],'pip-version':[],'gear-version':[],'install-date':[],'site':[]}
 
     ep = 'flywheel-sdk==(\d\d?.\d\d?.\d\d?)'
 
     print('Gear Name \t image \t\t sdk-version')
     for root, dirs, files in os.walk(manifest_dir):
         print('\n'+root+'\n')
+
+        site = os.path.split(root)[-1]
 
         for file in files:
             file = os.path.join(root, file)
@@ -49,27 +54,64 @@ def generate_list(manifest_dir):
                     if mn.find('api-key') != -1:
                         mn = json.load(open(file))
                         gear_name = mn['name']
+                        gear_label = mn['label']
+                        gear_version = mn['version']
+
                         docker_image = mn['custom']['docker-image']
 
-                        cmd = ['sudo', 'docker', 'run','--rm','-ti','--entrypoint=pip', docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
+                        # First try bash crawl (won't work with alpine)
+                        cmd = ['sudo','docker','run','--rm','-ti','--entrypoint=/bin/bash','-v','{}/commands:/tmp/my_commands'.format(pwd),docker_image,'/tmp/my_commands/bash_crawl.sh']
 
                         print(' '.join(cmd))
                         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
                         r.wait()
                         output = str(r.stdout.read())
                         print(output)
+                        output = output.split('\n')
 
-                        match = re.search(ep, output)
-                        if match == None:
-                            sdk_version = 'None'
-                        else:
-                            sdk_version = match.group(1)
-                        print(sdk_version)
+                        exp = ".*(pip[0-9]?\.?[0-9]?[0-9]?\.?[0-9]?[0-9]?)$"
+                        pip_list = []
+                        for result in output:
+                            m = None
+                            m = re.match(exp, result)
+                            if not m == None:
+                                pip_list.append(m.group(1))
 
-                        data_dict['gear-name'].append(gear_name)
-                        data_dict['custom-docker-image'].append(docker_image)
-                        data_dict['sdk-version'].append(sdk_version)
-                        print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
+
+                        if pip_list==[]:
+                            pip_list=['pip','pip2','pip3']
+
+                        for pip in pip_list:
+                            cmd = ['sudo', 'docker', 'run','--rm','-ti','--entrypoint={}'.format(pip), docker_image, 'freeze', '|', 'grep', 'flywheel-sdk']
+
+                            match = None
+
+                            try:
+                                print(' '.join(cmd))
+                                r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+                                r.wait()
+                                output = str(r.stdout.read())
+                                match = re.search(ep, output)
+
+
+                                while match == None:
+                                    sdk_version = 'None'
+                                else:
+                                    sdk_version = match.group(1)
+
+                                data_dict['gear-name'].append(gear_name)
+                                data_dict['gear-label'].append(gear_label)
+                                data_dict['gear-version'].append(gear_version)
+                                data_dict['custom-docker-image'].append(docker_image)
+                                data_dict['sdk-version'].append(sdk_version)
+                                data_dict['site'].append(site)
+                                data_dict['pip_version'].append(pip)
+                                data_dict['install_data'].append(file_updates[file[lmd+1:]])
+
+
+                                print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
+                            except:
+                                print('Error getting {}'.format(file))
 
                         cmd = ['sudo', 'docker', 'image', 'rm', docker_image]
                         print(' '.join(cmd))
@@ -102,6 +144,18 @@ def main():
     refresh = False
 
     exchange_dir = download_repo(refresh)
+    os.chdir(exchange_dir)
+    output=os.popen('git ls-tree -r --name-only HEAD | while read filename; do echo "$(git log -1 --format="%ad" -- "$filename") $filename"; done').read()
+    output=output.split('\n')
+    file_updates={}
+    for fi in range(len(output)):
+        line=output[fi]
+        i=line.rfind(' ')
+        file_key = line[i+1:]
+        date = line[:i]
+        file_updates[file_key] = date
+
+
     manifest_dir = os.path.join(exchange_dir, 'gears')
 
     if not os.path.exists(manifest_dir):
