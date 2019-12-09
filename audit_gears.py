@@ -33,7 +33,7 @@ def generate_list(manifest_dir,file_updates):
     repo_dir=os.path.split(manifest_dir)[0]
     lmd = len(repo_dir)
     # Initialize my Data Dict
-    data_dict = {'gear-name':[],'gear-label':[],'custom-docker-image':[], 'sdk-version': [],'pip-version':[],'gear-version':[],'install-date':[],'site':[]}
+    data_dict = {'gear-name':[],'gear-label':[],'custom-docker-image':[], 'sdk-version': [],'python-version':[],'gear-version':[],'install-date':[],'site':[]}
 
     ep = 'flywheel-sdk==(\d\d?.\d\d?.\d\d?)'
 
@@ -99,23 +99,33 @@ def generate_list(manifest_dir,file_updates):
                                 else:
                                     sdk_version = match.group(1)
 
+                                cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip),
+                                       docker_image, '--version']
+
+                                print(' '.join(cmd))
+                                r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+                                r.wait()
+                                output = str(r.stdout.read())
+                                vers = output.split()[-1][:-1]
+
                                 data_dict['gear-name'].append(gear_name)
                                 data_dict['gear-label'].append(gear_label)
                                 data_dict['gear-version'].append(gear_version)
                                 data_dict['custom-docker-image'].append(docker_image)
                                 data_dict['sdk-version'].append(sdk_version)
                                 data_dict['site'].append(site)
-                                data_dict['pip_version'].append(pip)
-                                data_dict['install_data'].append(file_updates[file[lmd+1:]])
+                                data_dict['python-version'].append(vers)
+                                data_dict['install-date'].append(file_updates[file[lmd+1:]])
 
 
                                 print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
+                                print('\n{} \t {} \t {}'.format(site, vers,file_updates[file[lmd+1:]]))
                             except:
                                 print('Error getting {}'.format(file))
 
                         cmd = ['sudo', 'docker', 'image', 'rm', docker_image]
                         print(' '.join(cmd))
-                        r=sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE,universal_newlines=True)
+                        r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
                         r.wait()
 
 
