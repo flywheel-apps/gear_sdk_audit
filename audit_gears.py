@@ -72,7 +72,7 @@ def find_pip_sdk(docker_image,pip):
         output = str(r.stdout.read())
         match = re.search(ep, output)
 
-        while match == None:
+        if match == None:
             sdk_version = 'None'
         else:
             sdk_version = match.group(1)
