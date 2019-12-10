@@ -283,14 +283,14 @@ def main():
     data = generate_list_from_instance(gear_dict)
     df = dict_2_pandas(data)
 
-    csv_out = os.path.join(work_dir, 'report.csv')
-    pickle_out = os.path.join(work_dir, 'df_pickle.pkl')
+    csv_out = os.path.join(work_dir, 'instance_report.csv')
+    pickle_out = os.path.join(work_dir, 'instance_df_pickle.pkl')
     try:
         df.to_csv(csv_out)
         df.to_pickle(pickle_out)
     except:
 
-        csv_out = os.path.join(work_dir, 'dict.csv')
+        csv_out = os.path.join(work_dir, 'instance_dict.csv')
         with open(csv_out, 'w') as f:  # Just use 'w' mode in 3.x
             w = csv.DictWriter(f, data.keys())
             w.writeheader()
