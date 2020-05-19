@@ -270,7 +270,7 @@ def generate_list(manifest_dir,gear_dict):
                         data_dict['api-enabled'].append(api_enabled)
 
                         print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
-                        print('\n{} \t {} \t {}'.format(site, vers,file_updates[file[lmd+1:]]))
+                        #print('\n{} \t {} \t {}'.format(site, vers,file_updates[file[lmd+1:]]))
 
 
                     cmd = ['sudo', 'docker', 'image', 'rm', docker_image]

@@ -195,7 +195,7 @@ def generate_list_from_instance(gear_dict, site):
 
 
 
-def generate_list(manifest_dir,gear_dict):
+def generate_list(manifest_dir):
     
     site_dict = {}
     
@@ -207,8 +207,6 @@ def generate_list(manifest_dir,gear_dict):
 
     ############ Loop through manifests in the exchange:
     for root, dirs, files in os.walk(manifest_dir):
-
-
 
         print('\n'+root+'\n')
 
@@ -242,13 +240,14 @@ def generate_list(manifest_dir,gear_dict):
                     gear_label = mn['label']
                     gear_version = mn['version']
                     docker_image = mn['custom']['docker-image']
-
+                    
                     #gear_date = get_install_date(gear_name, gear_dict)
 
                     pip_list = get_pip_list(docker_image)
 
                     for pip in pip_list:
                         pip_vers, package_vers_dict = full_pip_freeze(docker_image, pip)
+                        print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         data_dict['pip-freeze'][pip_vers] = package_vers_dict
                         
                     data_dict['gear-name'] = gear_name
@@ -300,16 +299,16 @@ def exchange_main():
 
 
     master_dict = {}
-    fw = flywheel.Client(key)
+    #fw = flywheel.Client(key)
     exchange_dir = download_repo(refresh)
     manifest_dir = os.path.join(exchange_dir, 'gears')
-    gear_dict = get_gears(fw)
+    #gear_dict = get_gears(fw)
 
     # if not os.path.exists(manifest_dir):
     #     raise Exception('No manifest directory found in repo')
 
     # Generate a list from the exchange files
-    data = generate_list(manifest_dir, gear_dict)
+    data = generate_list(manifest_dir)#, gear_dict)
 
 
     # Save after every site
