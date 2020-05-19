@@ -14,7 +14,7 @@ import flywheel
 import datetime
 
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
-pwd = '/Users/davidparker/Documents/Flywheel/SSE/MyWork/gear_sdk_audit'
+pwd = '/home/davidparker/Documents/gear_audit/gear_sdk_audit'
 work_dir = os.path.join(pwd,'workdir')
 site = 'ss.ce'
 
@@ -114,16 +114,21 @@ def get_install_date(gear_name, gear_dict):
 def generate_list_from_instance(gear_dict, site):
     os.makedirs(work_dir, exist_ok=True)
     # Initialize my Data Dict
-    data_dict = {'gear-name':[],
-                 'gear-label':[],
-                 'custom-docker-image':[],
-                 'pip-freeze':{},
-                 'gear-version':[],
-                 'install-date':[],
-                 'site':[],
-                 'api-enabled':[]}
+    
+    site_dict = {}
 
     for gear_name in gear_dict:
+        
+        data_dict = {'gear-name': '',
+                     'gear-label': '',
+                     'custom-docker-image': '',
+                     'pip-freeze': {},
+                     'gear-version': '',
+                     'install-date': '',
+                     'site': '',
+                     'api-enabled': ''}
+        
+        
         gear = gear_dict[gear_name]
         inputs = gear.gear.inputs
         for key in inputs.keys():
@@ -146,13 +151,13 @@ def generate_list_from_instance(gear_dict, site):
 
         pip_list = get_pip_list(docker_image)
 
-        data_dict['gear-name'].append(gear_name)
-        data_dict['gear-label'].append(gear_label)
-        data_dict['gear-version'].append(gear_version)
-        data_dict['custom-docker-image'].append(docker_image)
-        data_dict['site'].append(site)
-        data_dict['install-date'].append(gear_date)
-        data_dict['api-enabled'].append(api_enabled)
+        data_dict['gear-name'] = (gear_name)
+        data_dict['gear-label'] = (gear_label)
+        data_dict['gear-version'] = (gear_version)
+        data_dict['custom-docker-image'] = (docker_image)
+        data_dict['site'] = (site)
+        data_dict['install-date'] = (gear_date)
+        data_dict['api-enabled'] = (api_enabled)
 
         for pip in pip_list:
 
@@ -163,7 +168,8 @@ def generate_list_from_instance(gear_dict, site):
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
-
+        site_dict[gear_name] = data_dict
+        
     return data_dict
 
 
