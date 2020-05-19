@@ -103,7 +103,7 @@ def full_pip_freeze(docker_image,pip):
 
 
 
-def get_install_date(gear_name,gear_dict):
+def get_install_date(gear_name, gear_dict):
     date = 'unknown'
     if gear_name in gear_dict.keys():
         date = gear_dict[gear_name].created
@@ -111,7 +111,7 @@ def get_install_date(gear_name,gear_dict):
 
     return(date)
 
-def generate_list_from_instance(gear_dict,site):
+def generate_list_from_instance(gear_dict, site):
     os.makedirs(work_dir, exist_ok=True)
     # Initialize my Data Dict
     data_dict = {'gear-name':[],
@@ -268,38 +268,42 @@ def get_gears(fw):
 
 
 def main():
-
-
-    refresh = False
     
-    # exchange_dir = download_repo(refresh)
-    # manifest_dir = os.path.join(exchange_dir, 'gears')
-    gear_dict = get_gears()
+    refresh = False
 
-    # if not os.path.exists(manifest_dir):
-    #     raise Exception('No manifest directory found in repo')
+    site_list = {'ss.ce': 'ss.ce.flywheel.io:yE3uIZ6loWhEMQhoRk'}
+    master_dict = {}
+    for site, key in site_list.items():
+        fw = flywheel.Client(key)
+        # exchange_dir = download_repo(refresh)
+        # manifest_dir = os.path.join(exchange_dir, 'gears')
+        gear_dict = get_gears(fw)
 
-    # Generate a list from the exchange files
-    #data = generate_list(manifest_dir, gear_dict)
+        # if not os.path.exists(manifest_dir):
+        #     raise Exception('No manifest directory found in repo')
 
-    # Generate a list from the instance gear list
-    data = generate_list_from_instance(gear_dict,site)
-    df = dict_2_pandas(data)
+        # Generate a list from the exchange files
+        # data = generate_list(manifest_dir, gear_dict)
 
-    csv_out = os.path.join(work_dir, 'instance_report.csv')
-    pickle_out = os.path.join(work_dir, 'instance_df_pickle.pkl')
-    try:
-        df.to_csv(csv_out)
-        df.to_pickle(pickle_out)
-    except:
+        # Generate a list from the instance gear list
+        data = generate_list_from_instance(gear_dict, site)
+        master_dict[site] = data
 
-        csv_out = os.path.join(work_dir, 'instance_dict.csv')
-        with open(csv_out, 'w') as f:  # Just use 'w' mode in 3.x
-            w = csv.DictWriter(f, data.keys())
-            w.writeheader()
-            w.writerow(data)
+    # df = dict_2_pandas(data)
+    with open(os.path.join(work_dir, 'master_json.json'), 'w') as fp:
+        json.dump(master_dict, fp)
 
-
+    # # csv_out = os.path.join(work_dir, 'instance_report.csv')
+    # pickle_out = os.path.join(work_dir, 'instance_df_pickle.pkl')
+    # try:
+    #     df.to_pickle(pickle_out)
+    # except:
+    # 
+    #     csv_out = os.path.join(work_dir, 'instance_dict.csv')
+    #     with open(csv_out, 'w') as f:  # Just use 'w' mode in 3.x
+    #         w = csv.DictWriter(f, data.keys())
+    #         w.writeheader()
+    #         w.writerow(data)
 
 
 if __name__ == '__main__':

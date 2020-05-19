@@ -14,12 +14,12 @@ import flywheel
 import datetime
 
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
-pwd = '/Users/davidparker/Documents/Flywheel/SSE/MyWork/gear_sdk_audit'
-work_dir = os.path.join(pwd,'workdir')
+pwd = '/Users/davidparker/Documents/gear_audit'
+work_dir = os.path.join(pwd, 'workdir')
 
 
 def download_repo(refresh):
-    exchange_dir = os.path.join(work_dir,'flywheel')
+    exchange_dir = os.path.join(work_dir, 'flywheel')
     if not refresh and not os.path.exists(exchange_dir):
         cmd = ['git','clone',exchange_repo, exchange_dir]
         try:
@@ -203,8 +203,6 @@ def generate_list_from_instance(gear_dict):
         r.wait()
 
 
-
-
     return data_dict
 
 
@@ -326,27 +324,27 @@ def main():
         #     raise Exception('No manifest directory found in repo')
     
         # Generate a list from the exchange files
-        #data = generate_list(manifest_dir, gear_dict)
+        # data = generate_list(manifest_dir, gear_dict)
     
         # Generate a list from the instance gear list
-        data = generate_list_from_instance(gear_dict,site)
+        data = generate_list_from_instance(gear_dict, site)
         master_dict[site] = data
+        
     # df = dict_2_pandas(data)
     with open(os.path.join(work_dir, 'master_json.json'),'w') as fp:
-        json.dump(data, fp)
+        json.dump(master_dict, fp)
         
-    # csv_out = os.path.join(work_dir, 'instance_report.csv')
-    pickle_out = os.path.join(work_dir, 'instance_df_pickle.pkl')
-    try:
-        df.to_pickle(pickle_out)
-    except:
-
-        csv_out = os.path.join(work_dir, 'instance_dict.csv')
-        with open(csv_out, 'w') as f:  # Just use 'w' mode in 3.x
-            w = csv.DictWriter(f, data.keys())
-            w.writeheader()
-            w.writerow(data)
-
+    # # csv_out = os.path.join(work_dir, 'instance_report.csv')
+    # pickle_out = os.path.join(work_dir, 'instance_df_pickle.pkl')
+    # try:
+    #     df.to_pickle(pickle_out)
+    # except:
+    # 
+    #     csv_out = os.path.join(work_dir, 'instance_dict.csv')
+    #     with open(csv_out, 'w') as f:  # Just use 'w' mode in 3.x
+    #         w = csv.DictWriter(f, data.keys())
+    #         w.writeheader()
+    #         w.writerow(data)
 
 
 
