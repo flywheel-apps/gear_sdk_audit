@@ -97,7 +97,7 @@ def full_pip_freeze(docker_image,pip):
             if op.find('==') > -1:
                 output.append(op)
         
-        if len(op) == 0:
+        if len(output) == 0:
             print('No packages for pip {}'.format(pip_vers))
             return(pip_vers, {})
             
