@@ -90,6 +90,51 @@ def find_pip_sdk(docker_image,pip):
 
     return(sdk_version, pip_vers)
 
+
+def full_pip_freeze(docker_image,pip):
+
+    cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip), docker_image, 'freeze']
+    match = None
+    pip_vers = None
+
+    
+    try:
+        print(' '.join(cmd))
+        r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+        r.wait()
+        output = str(r.stdout.read())
+        
+        package_vers_dict = {}
+        output = output.split('\n')
+        if output[-1] == '':
+            output = output[:-1]
+        
+        output = [item.split('==') for item in output]
+        
+        for val in output:
+            package_vers_dict[val[0]] = val[1]
+            
+
+        cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip),
+               docker_image, '--version']
+
+        print(' '.join(cmd))
+        r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+        r.wait()
+        output = str(r.stdout.read())
+        pip_vers = output.split()[-1][:-1]
+        
+        
+    except Exception as e:
+        print('error extractiong pip info')
+
+    return(pip_vers, package_vers_dict)
+
+
+
+
+
+
 def get_install_date(gear_name,gear_dict):
     date = 'unknown'
     if gear_name in gear_dict.keys():
@@ -99,7 +144,7 @@ def get_install_date(gear_name,gear_dict):
     return(date)
 
 def generate_list_from_instance(gear_dict):
-    os.makedirs(work_dir,exist_ok=True)
+    os.makedirs(work_dir, exist_ok=True)
 
     # Initialize my Data Dict
     data_dict = {'gear-name':[],
@@ -268,25 +313,31 @@ def main():
 
 
     refresh = False
-
-    # exchange_dir = download_repo(refresh)
-    # manifest_dir = os.path.join(exchange_dir, 'gears')
-    gear_dict = get_gears()
-
-    # if not os.path.exists(manifest_dir):
-    #     raise Exception('No manifest directory found in repo')
-
-    # Generate a list from the exchange files
-    #data = generate_list(manifest_dir, gear_dict)
-
-    # Generate a list from the instance gear list
-    data = generate_list_from_instance(gear_dict)
-    df = dict_2_pandas(data)
-
-    csv_out = os.path.join(work_dir, 'instance_report.csv')
+    
+    site_list = {'ss.ce':'ss.ce.flywheel.io:yE3uIZ6loWhEMQhoRk'}
+    master_dict = {}
+    for site, key in site_list.items():
+        fw = flywheel.Client(key)
+        # exchange_dir = download_repo(refresh)
+        # manifest_dir = os.path.join(exchange_dir, 'gears')
+        gear_dict = get_gears(fw)
+    
+        # if not os.path.exists(manifest_dir):
+        #     raise Exception('No manifest directory found in repo')
+    
+        # Generate a list from the exchange files
+        #data = generate_list(manifest_dir, gear_dict)
+    
+        # Generate a list from the instance gear list
+        data = generate_list_from_instance(gear_dict,site)
+        master_dict[site] = data
+    # df = dict_2_pandas(data)
+    with open(os.path.join(work_dir, 'master_json.json'),'w') as fp:
+        json.dump(data, fp)
+        
+    # csv_out = os.path.join(work_dir, 'instance_report.csv')
     pickle_out = os.path.join(work_dir, 'instance_df_pickle.pkl')
     try:
-        df.to_csv(csv_out)
         df.to_pickle(pickle_out)
     except:
 
