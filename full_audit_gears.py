@@ -96,6 +96,7 @@ def full_pip_freeze(docker_image,pip):
         
     except Exception as e:
         print('error extractiong pip info')
+        print(e)
 
     return(pip_vers, package_vers_dict)
 
