@@ -170,7 +170,7 @@ def generate_list_from_instance(gear_dict, site):
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
-        site_dict[gear_name] = np.copy(data_dict)
+        site_dict[gear_name] = data_dict
         
     return site_dict
 
