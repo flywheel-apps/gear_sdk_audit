@@ -281,7 +281,6 @@ def get_gears(fw):
 
     gears = fw.get_all_gears()
     gear_dict = {}
-    gears = gears[0:4]
     for gear in gears:
         gear_dict[gear.gear.name] = gear
 
@@ -292,7 +291,8 @@ def main():
     
     refresh = False
 
-    site_list = {'ss.ce': 'ss.ce.flywheel.io:yE3uIZ6loWhEMQhoRk'}
+    site_list = {'CNI': 'cni.flywheel.io:dLvq27DKDPINU7g0mb',
+                 'ss.ce': 'ss.ce.flywheel.io:yE3uIZ6loWhEMQhoRk'}
     master_dict = {}
     for site, key in site_list.items():
         fw = flywheel.Client(key)
