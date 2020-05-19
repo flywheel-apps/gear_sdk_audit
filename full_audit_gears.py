@@ -12,6 +12,7 @@ import pickle
 import re
 import flywheel
 import datetime
+import numpy as np
 
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
 pwd = '/home/davidparker/Documents/gear_audit/gear_sdk_audit'
@@ -168,9 +169,9 @@ def generate_list_from_instance(gear_dict, site):
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
-        site_dict[gear_name] = data_dict
+        site_dict[gear_name] = np.copy(data_dict)
         
-    return data_dict
+    return site_dict
 
 
 
@@ -268,6 +269,7 @@ def get_gears(fw):
 
     gears = fw.get_all_gears()
     gear_dict = {}
+    gears = gears[0:4]
     for gear in gears:
         gear_dict[gear.gear.name] = gear
 
