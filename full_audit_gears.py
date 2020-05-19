@@ -120,7 +120,7 @@ def generate_list_from_instance(gear_dict, site):
     site_dict = {}
 
     for gear_name in gear_dict:
-        
+        api_enabled = False
         data_dict = {'gear-name': '',
                      'gear-label': '',
                      'custom-docker-image': '',
@@ -137,8 +137,8 @@ def generate_list_from_instance(gear_dict, site):
             if 'base' in inputs[key]:
                 if inputs[key]['base'] == 'api-key':
                     api_enabled = True
-                else:
-                    api_enabled = False
+
+                    
 
         gear_name = gear.gear['name']
         gear_label = gear.gear['label']
