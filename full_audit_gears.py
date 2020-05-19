@@ -68,6 +68,16 @@ def full_pip_freeze(docker_image,pip):
 
     
     try:
+        
+        cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip),
+               docker_image, '--version']
+
+        print(' '.join(cmd))
+        r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+        r.wait()
+        output = str(r.stdout.read())
+        pip_vers = output.split()[-1][:-1]
+
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
@@ -80,7 +90,11 @@ def full_pip_freeze(docker_image,pip):
         for op in raw_output:
             if op.find('==') > -1:
                 output.append(op)
-                
+        
+        if len(op) == 0:
+            print('No packages for pip {}'.format(pip_vers))
+            return(pip_vers, {})
+            
         
         output = [item.split('==') for item in output]
         
@@ -88,14 +102,7 @@ def full_pip_freeze(docker_image,pip):
             package_vers_dict[val[0]] = val[1]
             
 
-        cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip),
-               docker_image, '--version']
 
-        print(' '.join(cmd))
-        r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
-        r.wait()
-        output = str(r.stdout.read())
-        pip_vers = output.split()[-1][:-1]
         
         
     except Exception as e:
@@ -302,10 +309,11 @@ def main():
         # Generate a list from the instance gear list
         data = generate_list_from_instance(gear_dict, site)
         master_dict[site] = data
+        
+        # Save after every site
+        with open(os.path.join(work_dir, 'master_json.json'), 'w') as fp:
+            json.dump(master_dict, fp)
 
-    # df = dict_2_pandas(data)
-    with open(os.path.join(work_dir, 'master_json.json'), 'w') as fp:
-        json.dump(master_dict, fp)
 
     # # csv_out = os.path.join(work_dir, 'instance_report.csv')
     # pickle_out = os.path.join(work_dir, 'instance_df_pickle.pkl')
