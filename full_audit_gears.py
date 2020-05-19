@@ -170,13 +170,13 @@ def generate_list_from_instance(gear_dict, site):
 
         pip_list = get_pip_list(docker_image)
 
-        data_dict['gear-name'] = (gear_name)
-        data_dict['gear-label'] = (gear_label)
-        data_dict['gear-version'] = (gear_version)
-        data_dict['custom-docker-image'] = (docker_image)
-        data_dict['site'] = (site)
-        data_dict['install-date'] = (gear_date)
-        data_dict['api-enabled'] = (api_enabled)
+        data_dict['gear-name'] = gear_name
+        data_dict['gear-label'] = gear_label
+        data_dict['gear-version'] = gear_version
+        data_dict['custom-docker-image'] = docker_image
+        data_dict['site'] = site
+        data_dict['install-date'] = gear_date
+        data_dict['api-enabled'] = api_enabled
 
         for pip in pip_list:
 
@@ -196,29 +196,36 @@ def generate_list_from_instance(gear_dict, site):
 
 
 def generate_list(manifest_dir,gear_dict):
-
+    
+    site_dict = {}
+    
     print(manifest_dir)
-    # Initialize my Data Dict
-    data_dict = {'gear-name':[],
-                 'gear-label':[],
-                 'custom-docker-image':[],
-                 'sdk-version': [],
-                 'python-version':[],
-                 'gear-version':[],
-                 'install-date':[],
-                 'site':[],
-                 'api-enabled':[]}
+
 
 
     print('Gear Name \t image \t\t sdk-version')
 
     ############ Loop through manifests in the exchange:
     for root, dirs, files in os.walk(manifest_dir):
+
+
+
         print('\n'+root+'\n')
 
         site = os.path.split(root)[-1]
 
         for file in files:
+            
+            api_enabled = False
+            # Initialize my Data Dict
+            data_dict = {'gear-name': '',
+                         'gear-label': '',
+                         'custom-docker-image': '',
+                         'pip-freeze': {},
+                         'gear-version': '',
+                         'site': '',
+                         'api-enabled': ''}
+            
             file = os.path.join(root, file)
             try:
                 base, ext = os.path.splitext(file)
@@ -228,8 +235,7 @@ def generate_list(manifest_dir,gear_dict):
                     #print(file)
                     if mn.find('api-key') != -1:
                         api_enabled = True
-                    else:
-                        api_enabled = False
+
 
                     mn = json.load(open(file))
                     gear_name = mn['name']
@@ -237,39 +243,33 @@ def generate_list(manifest_dir,gear_dict):
                     gear_version = mn['version']
                     docker_image = mn['custom']['docker-image']
 
-                    get_install_date(gear_name, gear_dict)
+                    #gear_date = get_install_date(gear_name, gear_dict)
 
-                    pip_list=get_pip_list(docker_image)
+                    pip_list = get_pip_list(docker_image)
 
                     for pip in pip_list:
-
-                        sdk_version, pip_version = find_pip_sdk(docker_image,pip)
-
-                        data_dict['gear-name'].append(gear_name)
-                        data_dict['gear-label'].append(gear_label)
-                        data_dict['gear-version'].append(gear_version)
-                        data_dict['custom-docker-image'].append(docker_image)
-                        data_dict['sdk-version'].append(sdk_version)
-                        data_dict['site'].append(site)
-                        data_dict['python-version'].append(pip_version)
-                        data_dict['install-date'].append(file_updates[file[lmd+1:]])
-                        data_dict['api-enabled'].append(api_enabled)
-
-                        print('\n{} \t {} \t {}'.format(gear_name,docker_image,sdk_version))
-                        print('\n{} \t {} \t {}'.format(site, vers,file_updates[file[lmd+1:]]))
+                        pip_vers, package_vers_dict = full_pip_freeze(docker_image, pip)
+                        data_dict['pip-freeze'][pip_vers] = package_vers_dict
+                        
+                    data_dict['gear-name'] = gear_name
+                    data_dict['gear-label'] = gear_label
+                    data_dict['gear-version'] = gear_version
+                    data_dict['custom-docker-image'] = docker_image
+                    data_dict['site'] = site
+                    data_dict['api-enabled'] = api_enabled
 
 
                     cmd = ['sudo', 'docker', 'image', 'rm', docker_image]
                     print(' '.join(cmd))
                     r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
                     r.wait()
-
+                    site_dict[gear_name] = data_dict
 
             except Exception as e:
                 print('Unable to extract info from {}'.format(os.path.join(root, files)))
 
 
-    return data_dict
+    return site_dict
 
 
 
@@ -293,7 +293,33 @@ def get_gears(fw):
     return(gear_dict)
 
 
-def main():
+
+def exchange_main():
+
+    refresh = False
+
+
+    master_dict = {}
+    fw = flywheel.Client(key)
+    exchange_dir = download_repo(refresh)
+    manifest_dir = os.path.join(exchange_dir, 'gears')
+    gear_dict = get_gears(fw)
+
+    # if not os.path.exists(manifest_dir):
+    #     raise Exception('No manifest directory found in repo')
+
+    # Generate a list from the exchange files
+    data = generate_list(manifest_dir, gear_dict)
+
+
+    # Save after every site
+    with open(os.path.join(work_dir, 'master_json.json'), 'w') as fp:
+        json.dump(data, fp)
+
+
+
+
+def site_main():
     
     refresh = False
 
@@ -302,15 +328,15 @@ def main():
     master_dict = {}
     for site, key in site_list.items():
         fw = flywheel.Client(key)
-        # exchange_dir = download_repo(refresh)
-        # manifest_dir = os.path.join(exchange_dir, 'gears')
+        exchange_dir = download_repo(refresh)
+        manifest_dir = os.path.join(exchange_dir, 'gears')
         gear_dict = get_gears(fw)
 
         # if not os.path.exists(manifest_dir):
         #     raise Exception('No manifest directory found in repo')
 
         # Generate a list from the exchange files
-        # data = generate_list(manifest_dir, gear_dict)
+        data = generate_list(manifest_dir, gear_dict)
 
         # Generate a list from the instance gear list
         data = generate_list_from_instance(gear_dict, site)
@@ -335,6 +361,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    exchange_main()
 
 
