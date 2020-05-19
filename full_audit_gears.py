@@ -71,12 +71,16 @@ def full_pip_freeze(docker_image,pip):
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
-        output = str(r.stdout.read())
+        raw_output = str(r.stdout.read())
         
         package_vers_dict = {}
-        output = output.split('\n')
-        if output[-1] == '':
-            output = output[:-1]
+        raw_output = raw_output.split('\n')
+        output = []
+        
+        for op in raw_output:
+            if op.find('==') > -1:
+                output.append(op)
+                
         
         output = [item.split('==') for item in output]
         
