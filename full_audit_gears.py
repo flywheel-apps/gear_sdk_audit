@@ -62,7 +62,7 @@ def get_pip_list(docker_image):
 
 def full_pip_freeze(docker_image,pip):
 
-    cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip), docker_image, 'freeze']
+    
     match = None
     pip_vers = None
 
@@ -76,8 +76,14 @@ def full_pip_freeze(docker_image,pip):
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
         output = str(r.stdout.read())
-        pip_vers = output.split()[-1][:-1]
-
+        try:
+            pip_vers = output.split()[-1][:-1]
+        except Exception as e:
+            print('no pip version in {}'.format(output))
+        
+        
+        cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip), docker_image,
+               'freeze']
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
