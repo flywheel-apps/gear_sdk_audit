@@ -123,7 +123,8 @@ def generate_list_from_instance(gear_dict, site):
                  'site':[],
                  'api-enabled':[]}
 
-    for gear in gear_dict:
+    for gear_name in gear_dict:
+        gear = gear_dict[gear_name]
         inputs = gear.gear.inputs
         for key in inputs.keys():
             if 'base' in inputs[key]:
