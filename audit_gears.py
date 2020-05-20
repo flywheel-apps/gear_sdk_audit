@@ -213,15 +213,7 @@ def generate_list(manifest_dir,gear_dict):
 
     print(manifest_dir)
     # Initialize my Data Dict
-    data_dict = {'gear-name':[],
-                 'gear-label':[],
-                 'custom-docker-image':[],
-                 'sdk-version': [],
-                 'python-version':[],
-                 'gear-version':[],
-                 'install-date':[],
-                 'site':[],
-                 'api-enabled':[]}
+
 
 
     print('Gear Name \t image \t\t sdk-version')
@@ -229,7 +221,17 @@ def generate_list(manifest_dir,gear_dict):
     ############ Loop through manifests in the exchange:
     for root, dirs, files in os.walk(manifest_dir):
         print('\n'+root+'\n')
-
+       
+        data_dict = {'gear-name': [],
+                     'gear-label': [],
+                     'custom-docker-image': [],
+                     'sdk-version': [],
+                     'python-version': [],
+                     'gear-version': [],
+                     'install-date': [],
+                     'site': [],
+                     'api-enabled': []}
+        
         site = os.path.split(root)[-1]
 
         for file in files:

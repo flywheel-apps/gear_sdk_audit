@@ -197,21 +197,21 @@ def generate_list_from_instance(gear_dict, site):
 
 def generate_list(manifest_dir):
     
-    site_dict = {}
+    
     
     print(manifest_dir)
 
-
+    master_dict = {}
 
     print('Gear Name \t image \t\t sdk-version')
 
     ############ Loop through manifests in the exchange:
     for root, dirs, files in os.walk(manifest_dir):
-
+        site_dict = {}
         print('\n'+root+'\n')
 
         site = os.path.split(root)[-1]
-
+        
         for file in files:
             
             api_enabled = False
@@ -266,9 +266,10 @@ def generate_list(manifest_dir):
 
             except Exception as e:
                 print('Unable to extract info from {}'.format(os.path.join(root, files)))
+        
+        master_dict[site] = site_dict
 
-
-    return site_dict
+    return master_dict
 
 
 
