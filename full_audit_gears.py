@@ -265,7 +265,8 @@ def generate_list(manifest_dir):
                     site_dict[gear_name] = data_dict
 
             except Exception as e:
-                print('Unable to extract info from {}'.format(os.path.join(root, files)))
+                print('Unable to extract info from {}'.format(os.path.join(root, file)))
+                print(e)
         
         master_dict[site] = site_dict
 
