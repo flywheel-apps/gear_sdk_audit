@@ -13,6 +13,7 @@ import re
 import flywheel
 import datetime
 import numpy as np
+import glob
 
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
 pwd = '/home/davidparker/Documents/gear_audit/gear_sdk_audit'
@@ -33,7 +34,7 @@ def download_repo(refresh):
 
 def get_pip_list(docker_image):
     # First try bash crawl (won't work with alpine)
-    cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint=/bin/bash', '-v',
+    cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti', '--entrypoint=/bin/bash', '-v',
            '{}/commands:/tmp/my_commands'.format(pwd), docker_image, '/tmp/my_commands/bash_crawl.sh']
 
     print(' '.join(cmd))
@@ -49,18 +50,41 @@ def get_pip_list(docker_image):
         m = None
         m = re.match(exp, result)
         if not m == None:
-            new_pip = m.group(1)
+            new_pip = (result, m.group(1))
             if not new_pip in pip_list:
                 pip_list.append(new_pip)
 
     if pip_list == []:
-        pip_list = ['pip', 'pip2', 'pip3']
+        pip_list = [('pip', ''), ('pip2', ''), ('pip3', '')]
+    
+    new_pip_list = []
+    for pip_path, pip_vers in pip_list:
+        
+        if pip_vers == '':
+            v = pip_path[-1]
+            if v == 'p':
+                v = ''
+            new_pip_list.append((pip_path, 'python{}'.format(v)))
+            continue
+            
+        pip_dir = os.path.dirname(pip_path)
+        
+        named_python = glob.glob('{}/python[0-9]'.format(pip_dir))
+        if len(named_python) == 0:
+            named_python = glob.glob('{}/python'.format(pip_dir))
+            if len(named_python) == 0:
+                print('No Python in {}'.format(pip_dir))
+                continue
+        
+        new_pip_list.append((pip_path, named_python[0]))
+        
+        
 
-    return(pip_list)
+    return(new_pip_list)
 
 
 
-def full_pip_freeze(docker_image,pip):
+def full_pip_freeze(docker_image, pip, python):
 
     
     match = None
@@ -69,8 +93,8 @@ def full_pip_freeze(docker_image,pip):
     
     try:
         
-        cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip),
-               docker_image, '--version']
+        cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti',
+               '--entrypoint={}'.format(pip), docker_image, '--version']
 
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
@@ -81,9 +105,20 @@ def full_pip_freeze(docker_image,pip):
         except Exception as e:
             print('no pip version in {}'.format(output))
         
+
+        cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti',
+               '--entrypoint={}'.format(python), docker_image, '--version']
+
+        print(' '.join(cmd))
+        r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+        r.wait()
+        output = str(r.stdout.read())
+        python_vers = output
         
-        cmd = ['sudo', 'docker', 'run', '--rm', '-ti', '--entrypoint={}'.format(pip), docker_image,
-               'freeze']
+        
+        cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti',
+               '--entrypoint={}'.format(pip), docker_image, 'freeze']
+        
         print(' '.join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
@@ -99,7 +134,7 @@ def full_pip_freeze(docker_image,pip):
         
         if len(output) == 0:
             print('No packages for pip {}'.format(pip_vers))
-            return(pip_vers, {})
+            return(pip_vers, {},p ython_vers)
             
         
         output = [item.split('==') for item in output]
@@ -107,15 +142,12 @@ def full_pip_freeze(docker_image,pip):
         for val in output:
             package_vers_dict[val[0]] = val[1]
             
-
-
-        
         
     except Exception as e:
         print('error extractiong pip info')
         print(e)
 
-    return(pip_vers, package_vers_dict)
+    return(pip_vers, package_vers_dict, python_vers)
 
 
 
@@ -245,10 +277,13 @@ def generate_list(manifest_dir):
 
                     pip_list = get_pip_list(docker_image)
 
-                    for pip in pip_list:
-                        pip_vers, package_vers_dict = full_pip_freeze(docker_image, pip)
+                    for pip, python in pip_list:
+                        pip_vers, package_vers_dict, python_vers = full_pip_freeze(docker_image, pip, python)
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
-                        data_dict['pip-freeze'][pip_vers] = package_vers_dict
+                        
+                        py_name = os.path.join(os.path.dirname(python), python_vers)
+                        
+                        data_dict['pip-freeze'][py_name] = package_vers_dict
                         
                     data_dict['gear-name'] = gear_name
                     data_dict['gear-label'] = gear_label
