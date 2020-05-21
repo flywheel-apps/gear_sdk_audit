@@ -106,7 +106,7 @@ def match_pip_to_py(pip_versions, docker_image):
                         match = True
                         py_2_pip.append((py_path, py_vers, pip_path))
             
-            n_digits -= 1
+                n_digits -= 1
         
         if not match:
             py_2_pip.append((py_path, py_vers, ''))
