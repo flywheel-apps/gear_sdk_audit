@@ -340,7 +340,7 @@ def generate_list(manifest_dir):
                     pip_list = get_pip_list(docker_image)
 
                     for pydir, pyvers, pipdir in pip_list:
-                        pip_vers, package_vers_dict = full_pip_freeze(docker_image, pipdir, pydir)
+                        pip_vers, package_vers_dict = full_pip_freeze(docker_image, pipdir)
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
                         py_name = 'python {}'.format(pyvers)
