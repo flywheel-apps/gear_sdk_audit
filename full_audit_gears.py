@@ -160,7 +160,7 @@ def get_pip_list(docker_image):
 
 
   
-    py2pip = match_pip_to_py(pip_vers, docker_image)
+    py2pip = match_pip_to_py(pip_vers_list, docker_image)
 
 
     return(py2pip)
