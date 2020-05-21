@@ -47,6 +47,7 @@ def match_pip_to_py(pip_versions, docker_image):
     
     exp = ".*python([0-9]?\.?[0-9]?[0-9]?\.?[0-9]?[0-9]?)$"
     py_list = []
+    
     for result in output:
         m = None
         m = re.match(exp, result)
@@ -69,6 +70,7 @@ def match_pip_to_py(pip_versions, docker_image):
             python_vers = output.split()[-1]
             pair = (p, python_vers)
             if pair not in py_list:
+                print('adding {}'.format(p))
                 py_list.append(pair)
                 
      
@@ -105,7 +107,7 @@ def match_pip_to_py(pip_versions, docker_image):
                         print('match')
                         match = True
                         py_2_pip.append((py_path, py_vers, pip_path, pip_vers))
-            
+                        break
                 n_digits -= 1
         
         if not match:
