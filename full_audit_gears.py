@@ -64,7 +64,8 @@ def match_pip_to_py(pip_versions, docker_image):
             output = str(r.stdout.read().rstrip())
             print('python:{}'.format(output))
             #output = str(r.stdout.read().rstrip())
- 
+            if output == '':
+                continue
             python_vers = output.split()[-1]
             pair = (p, python_vers)
             if pair not in py_list:
