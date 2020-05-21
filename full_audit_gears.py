@@ -53,6 +53,7 @@ def match_pip_to_py(pip_versions, docker_image):
         m = re.match(exp, result)
         if not m == None:
             p = pathlib.Path(result.rstrip())
+            print('{} poiting to {}'.format(p,p.resolve()))
             p = p.resolve().as_posix()
 
             
@@ -335,7 +336,14 @@ def generate_list(manifest_dir):
                     gear_name = mn['name']
                     gear_label = mn['label']
                     gear_version = mn['version']
-                    docker_image = mn['custom']['docker-image']
+                    try:
+                        docker_image = mn['custom']['docker-image']
+                    except:
+                        try:
+                            docker_image = mn['custom']['gear-builder']['image']
+                        except:
+                            docker_image = 'unknown'
+                    
                     
                     #gear_date = get_install_date(gear_name, gear_dict)
 
@@ -379,7 +387,8 @@ def generate_list(manifest_dir):
 
             except Exception as e:
                 print('Unable to extract info from {}'.format(os.path.join(root, file)))
-                raise(e)
+                #raise(e)
+                print(e)
         
         master_dict[site] = site_dict
         # Save after every site
