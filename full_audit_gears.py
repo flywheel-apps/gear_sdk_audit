@@ -74,6 +74,8 @@ def get_pip_list(docker_image):
             named_python = glob.glob('{}/python'.format(pip_dir))
             if len(named_python) == 0:
                 print('No Python in {}'.format(pip_dir))
+                print('adding generic python{}'.format(pip_vers))
+                new_pip_list.append((pip_path, 'python{}'.format(pip_vers)))
                 continue
         
         new_pip_list.append((pip_path, named_python[0]))
@@ -134,7 +136,7 @@ def full_pip_freeze(docker_image, pip, python):
         
         if len(output) == 0:
             print('No packages for pip {}'.format(pip_vers))
-            return(pip_vers, {},p ython_vers)
+            return(pip_vers, {},python_vers)
             
         
         output = [item.split('==') for item in output]
