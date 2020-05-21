@@ -36,7 +36,7 @@ def download_repo(refresh):
 def match_pip_to_py(pip_versions, docker_image):
     # First get path pythons:
     cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti', '--entrypoint=/bin/bash', '-v',
-           '{}/commands:/tmp/my_commands'.format(pwd), docker_image, '/tmp/my_commands/bash_crawl.sh python*']
+           '{}/commands:/tmp/my_commands'.format(pwd), docker_image, '"/tmp/my_commands/bash_crawl.sh python*"']
 
     print(' '.join(cmd))
     r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
@@ -115,7 +115,7 @@ def match_pip_to_py(pip_versions, docker_image):
 def get_pip_list(docker_image):
     # First try bash crawl (won't work with alpine)
     cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti', '--entrypoint=/bin/bash', '-v',
-           '{}/commands:/tmp/my_commands'.format(pwd), docker_image, '/tmp/my_commands/bash_crawl.sh pip*']
+           '{}/commands:/tmp/my_commands'.format(pwd), docker_image, '"/tmp/my_commands/bash_crawl.sh pip*"']
 
     print(' '.join(cmd))
     r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
