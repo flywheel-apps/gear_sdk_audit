@@ -1,5 +1,6 @@
 #!/bin/bash
 shopt -s extglob
+echo $PATH
 IFS=':'
 read -ra paths <<< "$PATH"
 for i in "${paths[@]}"; do
