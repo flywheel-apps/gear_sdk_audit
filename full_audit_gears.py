@@ -87,7 +87,7 @@ def match_pip_to_py(pip_versions, docker_image):
             if pip_dir == py_dir:
                 print('match')
                 match = True
-                py_2_pip.append((py_path, py_vers, pip_path))
+                py_2_pip.append((py_path, py_vers, pip_path, pip_vers))
                 break
                      
         if not match:
@@ -100,16 +100,16 @@ def match_pip_to_py(pip_versions, docker_image):
                 print('looking for closest version to {}'.format(closest_version))
                 for pip_path, pip_vers in pip_versions:
                     # Match this python to every possible pip
-                    print('checking {} to {}'.format(closest_version,pip_vers))
+                    print('checking {} to {}'.format(closest_version, pip_vers))
                     if pip_vers == closest_version:
                         print('match')
                         match = True
-                        py_2_pip.append((py_path, py_vers, pip_path))
+                        py_2_pip.append((py_path, py_vers, pip_path, pip_vers))
             
                 n_digits -= 1
         
         if not match:
-            py_2_pip.append((py_path, py_vers, ''))
+            py_2_pip.append((py_path, py_vers, '', ''))
     
     return(py_2_pip)
 
@@ -339,8 +339,12 @@ def generate_list(manifest_dir):
 
                     pip_list = get_pip_list(docker_image)
 
-                    for pydir, pyvers, pipdir in pip_list:
-                        pip_vers, package_vers_dict = full_pip_freeze(docker_image, pipdir)
+                    for pydir, pyvers, pipdir, pipvers in pip_list:
+                        if pipdir == '':
+                            package_vers_dict='No Pip associated with Python'
+                        else:
+                            pip_vers, package_vers_dict = full_pip_freeze(docker_image, pipdir)
+                            
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
                         py_name = 'python_{}'.format(pyvers)
@@ -352,8 +356,10 @@ def generate_list(manifest_dir):
                         data_dict[py_name] = {}
                         data_dict[py_name]['freeze'] = package_vers_dict
                         data_dict[py_name]['pip_dir'] = pipdir
+                        data_dict[py_name]['pip_version'] = pipvers
                         data_dict[py_name]['python_dir'] = pydir
                         data_dict[py_name]['python_version'] = pyvers
+                        
                         
                     data_dict['gear-name'] = gear_name
                     data_dict['gear-label'] = gear_label
