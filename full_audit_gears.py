@@ -306,7 +306,10 @@ def generate_list(manifest_dir):
                 print(e)
         
         master_dict[site] = site_dict
-
+        # Save after every site
+        with open(os.path.join(work_dir, 'master_json.json'), 'w') as fp:
+            json.dump(master_dict, fp)
+            
     return master_dict
 
 
