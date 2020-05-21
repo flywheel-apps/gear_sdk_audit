@@ -61,9 +61,10 @@ def match_pip_to_py(pip_versions, docker_image):
             print(' '.join(cmd))
             r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
             r.wait()
-            output = str(r.stderr.read().rstrip())
+            output = str(r.stdout.read().rstrip())
             print('python:{}'.format(output))
             #output = str(r.stdout.read().rstrip())
+ 
             python_vers = output.split()[-1]
             pair = (p, python_vers)
             if pair not in py_list:
