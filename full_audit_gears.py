@@ -313,7 +313,6 @@ def generate_list(manifest_dir):
             data_dict = {'gear-name': '',
                          'gear-label': '',
                          'custom-docker-image': '',
-                         'pip-freeze': {},
                          'gear-version': '',
                          'site': '',
                          'api-enabled': ''}
@@ -343,8 +342,13 @@ def generate_list(manifest_dir):
                         pip_vers, package_vers_dict = full_pip_freeze(docker_image, pipdir)
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
-                        py_name = 'python {}'.format(pyvers)
-                        
+                        py_name = 'python_{}'.format(pyvers)
+                        i = 'a'
+                        while py_name in data_dict:
+                            py_name = '{}_{}'.format(py_name, i)
+                            i = chr(ord(i[0])+1)
+                            
+                        data_dict[py_name] = {}
                         data_dict[py_name]['freeze'] = package_vers_dict
                         data_dict[py_name]['pip_dir'] = pipdir
                         data_dict[py_name]['python_dir'] = pydir
