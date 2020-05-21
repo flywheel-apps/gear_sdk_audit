@@ -150,9 +150,10 @@ def get_pip_list(docker_image):
         output = str(r.stdout.read())
         try:
             pip_vers = output.split()[-1][:-1]
-            pip_vers_list.append(pip, pip_vers)
+            pip_vers_list.append((pip, pip_vers))
         except Exception as e:
             print('no pip version in {}'.format(output))
+            print(e)
 
 
   
