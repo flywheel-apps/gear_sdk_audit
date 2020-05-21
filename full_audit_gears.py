@@ -365,7 +365,7 @@ def generate_list(manifest_dir):
 
             except Exception as e:
                 print('Unable to extract info from {}'.format(os.path.join(root, file)))
-                print(e)
+                raise(e)
         
         master_dict[site] = site_dict
         # Save after every site
