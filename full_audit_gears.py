@@ -123,8 +123,7 @@ def get_pip_list(docker_image):
     output = str(r.stdout.read())
     print('output:')
     print(output)
-    print('err:')
-    print(r.stderr.read())
+
     output = output.split('\n')
 
     exp = ".*pip([0-9]?\.?[0-9]?[0-9]?\.?[0-9]?[0-9]?)$"
