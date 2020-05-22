@@ -411,7 +411,8 @@ def generate_list(manifest_dir):
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
                         py_name = 'python_{}'.format(pyvers)
-                        data_dict[py_name] = {}
+                        if not py_name in data_dict:
+                            data_dict[py_name] = {}
                         data_dict[py_name]['python_dir'] = pypath
                         data_dict[py_name]['python_version'] = pyvers
                         data_dict[py_name]['pips'] = {}
