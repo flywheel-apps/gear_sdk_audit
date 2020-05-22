@@ -83,7 +83,7 @@ def match_pip_to_py(pip_versions, docker_image):
                 py_list.append(pair)
                 
     pprint.pprint(py_list)
-    
+    pprint.pprint(pip_versions)
     py_2_pip = []
 
     for pip_path, pip_vers in pip_versions:
@@ -98,7 +98,7 @@ def match_pip_to_py(pip_versions, docker_image):
                 if new_py2pip not in py_2_pip:
                     py_2_pip.append(new_py2pip)
         
-        
+    pprint.pprint(py_2_pip)
 
         # for py_path, py_vers, main_vers, pip_path in python_match:
         #     python_dir = os.path.dirname(py_path)
@@ -202,7 +202,8 @@ def get_pip_list(docker_image):
         except Exception as e:
             print('no pip version in {}'.format(output))
             print(e)
-
+    
+    #pprint.pprint(pip_vers_list)
 
   
     py2pip, py_list = match_pip_to_py(pip_vers_list, docker_image)
