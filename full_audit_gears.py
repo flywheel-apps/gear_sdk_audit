@@ -15,6 +15,7 @@ import datetime
 import numpy as np
 import glob
 import pathlib
+import pprint
 
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
 pwd = '/home/davidparker/Documents/gear_audit/gear_sdk_audit'
@@ -53,10 +54,9 @@ def match_pip_to_py(pip_versions, docker_image):
         m = re.match(exp, result)
         if not m == None:
             p = pathlib.Path(result.rstrip())
-            print('{} poiting to {}'.format(p,p.resolve()))
+            print('{} poiting to {}'.format(p, p.resolve()))
             p = p.resolve().as_posix()
 
-            
             cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti',
                    '--entrypoint={}'.format(p), docker_image, '--version']
 
@@ -64,57 +64,98 @@ def match_pip_to_py(pip_versions, docker_image):
             r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
             r.wait()
             output = str(r.stdout.read().rstrip())
-            print('python:{}'.format(output))
+            print('python version: "{}"'.format(output))
             #output = str(r.stdout.read().rstrip())
             if output == '':
                 continue
-            python_vers = output.split()[-1]
-            pair = (p, python_vers)
+                
+            full_python_vers = output.split()[-1]
+            vlist = full_python_vers.split('.')
+            if len(vlist) > 2:
+                mainv = '.'.join(vlist[0:2])
+            else:
+                mainv = full_python_vers
+            
+            
+            pair = (p, full_python_vers, mainv)
             if pair not in py_list:
                 print('adding {}'.format(p))
                 py_list.append(pair)
                 
-     
+    pprint.pprint(py_list)
     
     py_2_pip = []
-    
-    for py_path, py_vers in py_list:
-        py_dir = os.path.dirname(py_path)
 
-        match = False
+    for pip_path, pip_vers in pip_versions:
+        # python_match = []
         
-        for pip_path, pip_vers in pip_versions:
-            # First check if directories match:
-            pip_dir = os.path.dirname(pip_path)
-            print('checking {} to {}'.format(py_dir, pip_dir))
-            if pip_dir == py_dir:
-                print('match')
-                match = True
-                py_2_pip.append((py_path, py_vers, pip_path, pip_vers))
-                break
-                     
-        if not match:
-            
-            split_vers = py_vers.split('.')
-            n_digits = len(split_vers)
+        # pip_dir = os.path.dirname(pip_path)
+        # ANY python that matches the pip version gets added
+        # No pip for your python version?  No dice.
+        for py_path, py_vers, main_vers in py_list:
+            if main_vers == pip_vers:
+                new_py2pip = (py_path, py_vers, main_vers, pip_path, pip_vers)
+                if new_py2pip not in py_2_pip:
+                    py_2_pip.append(new_py2pip)
+        
+        
 
-            while not match and n_digits > 0:
-                closest_version = '.'.join(split_vers[0:n_digits])
-                print('looking for closest version to {}'.format(closest_version))
-                for pip_path, pip_vers in pip_versions:
-                    # Match this python to every possible pip
-                    print('checking {} to {}'.format(closest_version, pip_vers))
-                    if pip_vers == closest_version:
-                        print('match')
-                        match = True
-                        py_2_pip.append((py_path, py_vers, pip_path, pip_vers))
-                        break
-                n_digits -= 1
+        # for py_path, py_vers, main_vers, pip_path in python_match:
+        #     python_dir = os.path.dirname(py_path)
+        # 
+        #     # Check if it lives in the pip directory
+        #     if python_dir == pip_dir:
+        #         new_py2pip = (py_path, py_vers, pip_path, pip_vers)
+        #         if new_py2pip not in py_2_pip:
+        #             py_2_pip.append(new_py2pip)
+        #     
+        #     # now just check if the versions match
+        # 
+        # # Check to see if there are any other version of python that MIGHT be used
+        # # By this pip (in the case of miniconda environments or something.  Fuck.
+        # # Check if it lives in the pip directory
+        # for py_path, py_vers, main_vers in python_match:
+        #     python_dir = os.path.dirname(py_path)
+        #     if python_dir == pip_dir:
+        #         new_py2pip = (py_path, py_vers, pip_path, pip_vers)
+        #         if new_py2pip not in py_2_pip:
+        #             py_2_pip.append(new_py2pip)
+
+            # py_dir = os.path.dirname(py_path)
+            # match = False
+            # 
+            # for pip_path, pip_vers in pip_versions:
+            #     # First check if directories match:
+            #     
+            #     print('checking {} to {}'.format(py_dir, pip_dir))
+            #     if pip_dir == py_dir:
+            #         print('match')
+            #         match = True
+            #         py_2_pip.append((py_path, py_vers, pip_path, pip_vers))
+            #         break
+            #              
+            # if not match:
+            #     
+            #     split_vers = py_vers.split('.')
+            #     n_digits = len(split_vers)
+            # 
+            #     while not match and n_digits > 0:
+            #         closest_version = '.'.join(split_vers[0:n_digits])
+            #         print('looking for closest version to {}'.format(closest_version))
+            #         for pip_path, pip_vers in pip_versions:
+            #             # Match this python to every possible pip
+            #             print('checking {} to {}'.format(closest_version, pip_vers))
+            #             if pip_vers == closest_version:
+            #                 print('match')
+            #                 match = True
+            #                 py_2_pip.append((py_path, py_vers, pip_path, pip_vers))
+            #                 break
+            #         n_digits -= 1
+            # 
+            # if not match:
+            #     py_2_pip.append((py_path, py_vers, '', ''))
         
-        if not match:
-            py_2_pip.append((py_path, py_vers, '', ''))
-    
-    return(py_2_pip)
+    return(py_2_pip,py_list)
 
 
 def get_pip_list(docker_image):
@@ -164,10 +205,10 @@ def get_pip_list(docker_image):
 
 
   
-    py2pip = match_pip_to_py(pip_vers_list, docker_image)
+    py2pip, py_list = match_pip_to_py(pip_vers_list, docker_image)
+    
 
-
-    return(py2pip)
+    return(py2pip, py_list, pip_vers_list)
 
 
 
@@ -347,13 +388,24 @@ def generate_list(manifest_dir):
                     
                     #gear_date = get_install_date(gear_name, gear_dict)
 
-                    pip_list = get_pip_list(docker_image)
+                    py2pip, py_list, pip_list = get_pip_list(docker_image)
+                    # py2pip = (py_path, py_vers, main_vers, pip_path, pip_vers)
+                    # py_list: (p, full_python_vers, mainv)
+                    # pip_list: (pip, pip_vers)
+                    
+                    full_py_list = []
+                    full_pip_list = []
+                    for pypath, pyvers, pippath, pipvers in pip_list:
+                        
+                        if pypath not in full_py_list:
+                            full_py_list.append(pypath)
+                        if pippath not in full_pip_list:
+                            full_pip_list.append(pippath)
 
-                    for pydir, pyvers, pipdir, pipvers in pip_list:
-                        if pipdir == '':
-                            package_vers_dict='No Pip associated with Python'
+                        if pippath == '':
+                            package_vers_dict = 'Error Extracting Pip Version'
                         else:
-                            pip_vers, package_vers_dict = full_pip_freeze(docker_image, pipdir)
+                            pip_vers, package_vers_dict = full_pip_freeze(docker_image, pippath)
                             
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
@@ -365,12 +417,14 @@ def generate_list(manifest_dir):
                             
                         data_dict[py_name] = {}
                         data_dict[py_name]['freeze'] = package_vers_dict
-                        data_dict[py_name]['pip_dir'] = pipdir
+                        data_dict[py_name]['pip_dir'] = pippath
                         data_dict[py_name]['pip_version'] = pipvers
-                        data_dict[py_name]['python_dir'] = pydir
+                        data_dict[py_name]['python_dir'] = pypath
                         data_dict[py_name]['python_version'] = pyvers
                         
                         
+                    data_dict['Pythons'] = full_py_list
+                    data_dict['Pips'] = full_pip_list
                     data_dict['gear-name'] = gear_name
                     data_dict['gear-label'] = gear_label
                     data_dict['gear-version'] = gear_version
