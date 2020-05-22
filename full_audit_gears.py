@@ -410,17 +410,22 @@ def generate_list(manifest_dir):
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
                         py_name = 'python_{}'.format(pyvers)
-                        i = 'a'
-                        while py_name in data_dict:
-                            py_name = '{}_{}'.format(py_name, i)
-                            i = chr(ord(i[0])+1)
-                            
                         data_dict[py_name] = {}
-                        data_dict[py_name]['freeze'] = package_vers_dict
-                        data_dict[py_name]['pip_dir'] = pippath
-                        data_dict[py_name]['pip_version'] = pipvers
                         data_dict[py_name]['python_dir'] = pypath
                         data_dict[py_name]['python_version'] = pyvers
+                        data_dict[py_name]['pips'] = {}
+                        
+                        pip_name = 'pip_{}'.format(pipvers)
+                        i = 'a'
+                        while pip_name in data_dict[py_name]['pips']:
+                            pip_name = '{}_{}'.format(pip_name, i)
+                            i = chr(ord(i[0])+1)
+                            
+                        data_dict[py_name]['pips'][pip_name] = {}
+                        data_dict[py_name]['pips'][pip_name]['freeze'] = package_vers_dict
+                        data_dict[py_name]['pips'][pip_name]['pip_dir'] = pippath
+                        data_dict[py_name]['pips'][pip_name]['pip_version'] = pipvers
+
                         
                         
                     data_dict['Pythons'] = full_py_list
