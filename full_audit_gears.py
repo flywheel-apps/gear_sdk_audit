@@ -415,7 +415,9 @@ def generate_list(manifest_dir):
                             data_dict[py_name] = {}
                         data_dict[py_name]['python_dir'] = pypath
                         data_dict[py_name]['python_version'] = pyvers
-                        data_dict[py_name]['pips'] = {}
+                        
+                        if not 'pips' in data_dict[py_name]:
+                            data_dict[py_name]['pips'] = {}
                         
                         pip_name = 'pip_{}'.format(pipvers)
                         i = 'a'
