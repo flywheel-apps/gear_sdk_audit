@@ -395,7 +395,7 @@ def generate_list(manifest_dir):
                     
                     full_py_list = []
                     full_pip_list = []
-                    for pypath, pyvers, pippath, pipvers in pip_list:
+                    for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
                         
                         if pypath not in full_py_list:
                             full_py_list.append(pypath)
