@@ -186,6 +186,8 @@ def get_pip_list(docker_image):
     if pip_list == []:
         pip_list = ['pip','pip2','pip3']
   
+    pip_dir_list = []
+    pip_ver_list = []
     
     pip_vers_list = []
     for pip in pip_list:
@@ -198,7 +200,14 @@ def get_pip_list(docker_image):
         output = str(r.stdout.read())
         try:
             pip_vers = output.split()[-1][:-1]
+            pip_dir = os.path.dirname(pip)
+            if pip_dir in pip_dir_list and pip_ver_list:
+                continue
             pip_vers_list.append((pip, pip_vers))
+            
+            pip_dir_list.append(pip_dir)
+            pip_ver_list.append(pip_vers)
+            
         except Exception as e:
             print('no pip version in {}'.format(output))
             print(e)
