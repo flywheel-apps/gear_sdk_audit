@@ -201,7 +201,7 @@ def get_pip_list(docker_image):
         try:
             pip_vers = output.split()[-1][:-1]
             pip_dir = os.path.dirname(pip)
-            if pip_dir in pip_dir_list and pip_ver_list:
+            if pip_dir in pip_dir_list and pip_vers in pip_ver_list:
                 continue
             pip_vers_list.append((pip, pip_vers))
             
