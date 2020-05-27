@@ -339,19 +339,19 @@ def generate_list_from_instance(gear_dict, site):
 
             print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
 
-            data_dict['Pythons'] = {}
+            #data_dict['Pythons'] = {}
             py_name = 'python_{}'.format(pyvers)
             if not py_name in data_dict:
                 data_dict['Pythons'][py_name] = {}
             data_dict['Pythons'][py_name]['python_dir'] = pypath
             data_dict['Pythons'][py_name]['python_version'] = pyvers
 
-            if not 'pips' in data_dict[py_name]:
+            if not 'pips' in data_dict['Pythons'][py_name]:
                 data_dict['Pythons'][py_name]['pips'] = {}
 
             pip_name = 'pip_{}'.format(pipvers)
             i = 'a'
-            while pip_name in data_dict[py_name]['pips']:
+            while pip_name in data_dict['Pythons'][py_name]['pips']:
                 pip_name = '{}_{}'.format(pip_name, i)
                 i = chr(ord(i[0]) + 1)
 
@@ -454,19 +454,19 @@ def generate_list(manifest_dir):
                             
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
-                        data_dict['Pythons'] = {}
+                        #data_dict['Pythons'] = {}
                         py_name = 'python_{}'.format(pyvers)
-                        if not py_name in data_dict:
+                        if not py_name in data_dict['Pythons']:
                             data_dict['Pythons'][py_name] = {}
                         data_dict['Pythons'][py_name]['python_dir'] = pypath
                         data_dict['Pythons'][py_name]['python_version'] = pyvers
                         
-                        if not 'pips' in data_dict[py_name]:
+                        if not 'pips' in data_dict['Pythons'][py_name]:
                             data_dict['Pythons'][py_name]['pips'] = {}
                         
                         pip_name = 'pip_{}'.format(pipvers)
                         i = 'a'
-                        while pip_name in data_dict[py_name]['pips']:
+                        while pip_name in data_dict['Pythons'][py_name]['pips']:
                             pip_name = '{}_{}'.format(pip_name, i)
                             i = chr(ord(i[0])+1)
                             
