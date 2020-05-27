@@ -565,7 +565,7 @@ def docker_login_to_instance(instance_url, instance_email, instance_api):
         pass
     else:
         print(error)
-        raise('Unable to login to instance {} with ID {}'.format(instance_url,instance_email))
+        raise Exception('Unable to login to instance {} with ID {}'.format(instance_url,instance_email))
     
 
     
