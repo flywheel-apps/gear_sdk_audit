@@ -342,7 +342,7 @@ def generate_list_from_instance(gear_dict, site):
             data_dict['Pythons'] = {}
             py_name = 'python_{}'.format(pyvers)
             if not py_name in data_dict:
-                data_dict[py_name] = {}
+                data_dict['Pythons'][py_name] = {}
             data_dict['Pythons'][py_name]['python_dir'] = pypath
             data_dict['Pythons'][py_name]['python_version'] = pyvers
 
@@ -457,7 +457,7 @@ def generate_list(manifest_dir):
                         data_dict['Pythons'] = {}
                         py_name = 'python_{}'.format(pyvers)
                         if not py_name in data_dict:
-                            data_dict[py_name] = {}
+                            data_dict['Pythons'][py_name] = {}
                         data_dict['Pythons'][py_name]['python_dir'] = pypath
                         data_dict['Pythons'][py_name]['python_version'] = pyvers
                         
@@ -554,7 +554,7 @@ def exchange_main():
 def docker_login_to_instance(instance_url, instance_email, instance_api):
     
     
-    cmd = ['sudo', 'docker', 'login', instance_url, '-u', instance_email,'--p',instance_api]
+    cmd = ['sudo', 'docker', 'login', instance_url, '-u', instance_email,'-p',instance_api]
     r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
     r.wait()
     
