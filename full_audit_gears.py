@@ -325,6 +325,7 @@ def generate_list_from_instance(gear_dict, site):
 
         full_py_list = []
         full_pip_list = []
+        data_dict['Pythons'] = {}
         for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
 
             if pypath not in full_py_list:
@@ -339,7 +340,7 @@ def generate_list_from_instance(gear_dict, site):
 
             print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
 
-            #data_dict['Pythons'] = {}
+            #
             py_name = 'python_{}'.format(pyvers)
             if not py_name in data_dict:
                 data_dict['Pythons'][py_name] = {}
@@ -440,6 +441,7 @@ def generate_list(manifest_dir):
                     
                     full_py_list = []
                     full_pip_list = []
+                    data_dict['Pythons'] = {}
                     for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
                         
                         if pypath not in full_py_list:
