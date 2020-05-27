@@ -287,17 +287,19 @@ def generate_list_from_instance(gear_dict, site):
 
     for gear_name in gear_dict:
         api_enabled = False
+        found_manifest = False
+        # Initialize my Data Dict
         data_dict = {'gear-name': '',
                      'gear-label': '',
                      'custom-docker-image': '',
-                     'pip-freeze': {},
                      'gear-version': '',
-                     'install-date': '',
                      'site': '',
-                     'api-enabled': ''}
+                     'api-enabled': '',
+                     'found-manifest': ''}
         
         
         gear = gear_dict[gear_name]
+        
         inputs = gear.gear.inputs
         for key in inputs.keys():
             if 'base' in inputs[key]:
@@ -305,32 +307,67 @@ def generate_list_from_instance(gear_dict, site):
                     api_enabled = True
 
                     
-
         gear_name = gear.gear['name']
         gear_label = gear.gear['label']
         gear_version = gear.gear['version']
         
         if 'docker-image' in gear.gear['custom']:
             docker_image = gear.gear['custom']['docker-image']
-        else:
+        elif 'gear-builder' in gear.gear['custom'] and 'image' in gear.gear['custom']['gear-builder']:
             docker_image = gear.gear['custom']['gear-builder']['image']
+        else:
+            docker_image = 'unknown'
 
-        gear_date = get_install_date(gear_name, gear_dict)
+        py2pip, py_list, pip_list = get_pip_list(docker_image)
+        # py2pip = (py_path, py_vers, main_vers, pip_path, pip_vers)
+        # py_list: (p, full_python_vers, mainv)
+        # pip_list: (pip, pip_vers)
 
-        pip_list = get_pip_list(docker_image)
+        full_py_list = []
+        full_pip_list = []
+        for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
 
+            if pypath not in full_py_list:
+                full_py_list.append(pypath)
+            if pippath not in full_pip_list:
+                full_pip_list.append(pippath)
+
+            if pippath == '':
+                package_vers_dict = 'Error Extracting Pip Version'
+            else:
+                pip_vers, package_vers_dict = full_pip_freeze(docker_image, pippath)
+
+            print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
+
+            data_dict['Pythons'] = {}
+            py_name = 'python_{}'.format(pyvers)
+            if not py_name in data_dict:
+                data_dict[py_name] = {}
+            data_dict['Pythons'][py_name]['python_dir'] = pypath
+            data_dict['Pythons'][py_name]['python_version'] = pyvers
+
+            if not 'pips' in data_dict[py_name]:
+                data_dict['Pythons'][py_name]['pips'] = {}
+
+            pip_name = 'pip_{}'.format(pipvers)
+            i = 'a'
+            while pip_name in data_dict[py_name]['pips']:
+                pip_name = '{}_{}'.format(pip_name, i)
+                i = chr(ord(i[0]) + 1)
+
+            data_dict['Pythons'][py_name]['pips'][pip_name] = {}
+            data_dict['Pythons'][py_name]['pips'][pip_name]['freeze'] = package_vers_dict
+            data_dict['Pythons'][py_name]['pips'][pip_name]['pip_dir'] = pippath
+            data_dict['Pythons'][py_name]['pips'][pip_name]['pip_version'] = pipvers
+
+        data_dict['Python_Dirs'] = full_py_list
+        data_dict['Pip_Dirs'] = full_pip_list
         data_dict['gear-name'] = gear_name
         data_dict['gear-label'] = gear_label
         data_dict['gear-version'] = gear_version
         data_dict['custom-docker-image'] = docker_image
         data_dict['site'] = site
-        data_dict['install-date'] = gear_date
         data_dict['api-enabled'] = api_enabled
-
-        for pip in pip_list:
-
-            pip_vers, package_vers_dict = full_pip_freeze(docker_image, pip)
-            data_dict['pip-freeze'][pip_vers] = package_vers_dict
 
         cmd = ['sudo', 'docker', 'image', 'rm', docker_image]
         print(' '.join(cmd))
@@ -339,8 +376,6 @@ def generate_list_from_instance(gear_dict, site):
         site_dict[gear_name] = data_dict
         
     return site_dict
-
-
 
 
 
@@ -419,14 +454,15 @@ def generate_list(manifest_dir):
                             
                         print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
                         
+                        data_dict['Pythons'] = {}
                         py_name = 'python_{}'.format(pyvers)
                         if not py_name in data_dict:
                             data_dict[py_name] = {}
-                        data_dict[py_name]['python_dir'] = pypath
-                        data_dict[py_name]['python_version'] = pyvers
+                        data_dict['Pythons'][py_name]['python_dir'] = pypath
+                        data_dict['Pythons'][py_name]['python_version'] = pyvers
                         
                         if not 'pips' in data_dict[py_name]:
-                            data_dict[py_name]['pips'] = {}
+                            data_dict['Pythons'][py_name]['pips'] = {}
                         
                         pip_name = 'pip_{}'.format(pipvers)
                         i = 'a'
@@ -434,15 +470,15 @@ def generate_list(manifest_dir):
                             pip_name = '{}_{}'.format(pip_name, i)
                             i = chr(ord(i[0])+1)
                             
-                        data_dict[py_name]['pips'][pip_name] = {}
-                        data_dict[py_name]['pips'][pip_name]['freeze'] = package_vers_dict
-                        data_dict[py_name]['pips'][pip_name]['pip_dir'] = pippath
-                        data_dict[py_name]['pips'][pip_name]['pip_version'] = pipvers
+                        data_dict['Pythons'][py_name]['pips'][pip_name] = {}
+                        data_dict['Pythons'][py_name]['pips'][pip_name]['freeze'] = package_vers_dict
+                        data_dict['Pythons'][py_name]['pips'][pip_name]['pip_dir'] = pippath
+                        data_dict['Pythons'][py_name]['pips'][pip_name]['pip_version'] = pipvers
 
                         
                         
-                    data_dict['Pythons'] = full_py_list
-                    data_dict['Pips'] = full_pip_list
+                    data_dict['Python_Dirs'] = full_py_list
+                    data_dict['Pip_Dirs'] = full_pip_list
                     data_dict['gear-name'] = gear_name
                     data_dict['gear-label'] = gear_label
                     data_dict['gear-version'] = gear_version
@@ -515,26 +551,58 @@ def exchange_main():
         json.dump(data, fp)
 
 
+def docker_login_to_instance(instance_url, instance_email, instance_api):
+    
+    
+    cmd = ['sudo', 'docker', 'login', instance_url, '-u', instance_email,'--p',instance_api]
+    r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+    r.wait()
+    
+    output = str(r.stdout.read().rstrip())
+    error = str(r.stderr.read().rstrip())
+    
+    if output == 'Login Succeeded':
+        pass
+    else:
+        print(error)
+        raise('Unable to login to instance {} with ID {}'.format(instance_url,instance_email))
+    
 
+    
+    
 
 def site_main():
     
     refresh = False
 
-    site_list = {'CNI': 'cni.flywheel.io:dLvq27DKDPINU7g0mb',
-                 'ss.ce': 'ss.ce.flywheel.io:yE3uIZ6loWhEMQhoRk'}
+    site_list = {'CNI': ['https://cni.flywheel.io/',
+                         'davidparker@flywheel.io',
+                         'cni.flywheel.io:dLvq27DKDPINU7g0mb'],
+                 'ss.ce': ['https://ss.ce.flywheel.io/',
+                           'davidparker@flywheel.io',
+                           'ss.ce.flywheel.io:yE3uIZ6loWhEMQhoRk']}
     master_dict = {}
-    for site, key in site_list.items():
-        fw = flywheel.Client(key)
-        exchange_dir = download_repo(refresh)
-        manifest_dir = os.path.join(exchange_dir, 'gears')
+    for site, credentials in site_list.items():
+        site_url = credentials[0]
+        site_email = credentials[1]
+        site_api = credentials[2]
+        
+        fw = flywheel.Client(site_api)
+        master_dict[site] = {}
+        
+        try:
+            docker_login_to_instance(site_url,site_email,site_api)
+        except Exception as e:
+            print('ERROR LOGGING IN TO {}'.format(site_url))
+            print(e)
+            
+            continue
+        
         gear_dict = get_gears(fw)
-
         # if not os.path.exists(manifest_dir):
         #     raise Exception('No manifest directory found in repo')
 
         # Generate a list from the exchange files
-        data = generate_list(manifest_dir, gear_dict)
 
         # Generate a list from the instance gear list
         data = generate_list_from_instance(gear_dict, site)
@@ -559,6 +627,7 @@ def site_main():
 
 
 if __name__ == '__main__':
-    exchange_main()
+    #exchange_main()
+    site_main()
 
 
