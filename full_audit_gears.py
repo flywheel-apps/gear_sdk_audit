@@ -609,7 +609,7 @@ def site_main():
         master_dict[site] = data
         
         # Save after every site
-        with open(os.path.join(work_dir, 'master_json.json'), 'w') as fp:
+        with open(os.path.join(work_dir, 'instance_master_json.json'), 'w') as fp:
             json.dump(master_dict, fp)
 
 
