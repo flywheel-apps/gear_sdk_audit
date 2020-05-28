@@ -279,7 +279,7 @@ def get_install_date(gear_name, gear_dict):
 
     return(date)
 
-def generate_list_from_instance(gear_dict, site):
+def generate_list_from_instance(gear_dict, site, instance_url):
     os.makedirs(work_dir, exist_ok=True)
     # Initialize my Data Dict
     
@@ -317,8 +317,13 @@ def generate_list_from_instance(gear_dict, site):
             docker_image = gear.gear['custom']['gear-builder']['image']
         else:
             docker_image = 'unknown'
-
-        py2pip, py_list, pip_list = get_pip_list(docker_image)
+            
+        if docker_image == 'unknown':
+            py2pip = []
+        else:
+            pull_docker_image(docker_image, instance_url)
+            py2pip, py_list, pip_list = get_pip_list(docker_image)
+            
         # py2pip = (py_path, py_vers, main_vers, pip_path, pip_vers)
         # py_list: (p, full_python_vers, mainv)
         # pip_list: (pip, pip_vers)
@@ -508,6 +513,26 @@ def generate_list(manifest_dir):
     return master_dict
 
 
+def pull_docker_image(docker_image, instance_url=None):
+    
+    cmd = ['sudo', 'docker', 'pull', docker_image]
+    r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+    r.wait()
+
+    output = str(r.stdout.read().rstrip())
+    error = str(r.stderr.read().rstrip())
+
+    if output == '':
+        if instance_url:
+            base, name = docker_image.split('/')
+            docker_image = '/'.join([instance_url,name])
+            print('retrying with {}.format(docker_image')
+        else:
+            print('Unable to download {}'.format(docker_image))
+            pass
+        
+    else:
+        pass
 
 
 def dict_2_pandas(data):
@@ -577,12 +602,8 @@ def site_main():
     
     refresh = False
 
-    site_list = {'CNI': ['https://cni.flywheel.io/',
-                         'davidparker@flywheel.io',
-                         'cni.flywheel.io:dLvq27DKDPINU7g0mb'],
-                 'ss.ce': ['https://ss.ce.flywheel.io/',
-                           'davidparker@flywheel.io',
-                           'ss.ce.flywheel.io:yE3uIZ6loWhEMQhoRk']}
+
+    
     master_dict = {}
     for site, credentials in site_list.items():
         site_url = credentials[0]
@@ -607,7 +628,7 @@ def site_main():
         # Generate a list from the exchange files
 
         # Generate a list from the instance gear list
-        data = generate_list_from_instance(gear_dict, site)
+        data = generate_list_from_instance(gear_dict, site, site_url)
         master_dict[site] = data
         
         # Save after every site
