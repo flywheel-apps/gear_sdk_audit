@@ -530,7 +530,14 @@ def pull_docker_image(docker_image, instance_url=None):
         
         if instance_url:
             print('Trying from site URL')
-            base, name = docker_image.split('/')
+            split_image = docker_image.split('/')
+            if len(split_image) == 1:
+                name = split_image[0]
+            elif len(split_image) > 1:
+                name = split_image[-1]
+            else:
+                name='UNKNOWN'
+                
             docker_image = '/'.join([instance_url,name])
             print('retrying with {}'.format(docker_image))
             cmd = ['sudo', 'docker', 'pull', docker_image]
