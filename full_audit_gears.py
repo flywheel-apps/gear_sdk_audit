@@ -323,7 +323,7 @@ def generate_list_from_instance(gear_dict, site, instance_url):
         if docker_image == 'unknown':
             py2pip = []
         else:
-            pull_docker_image(docker_image, instance_url)
+            docker_image = pull_docker_image(docker_image, instance_url)
             py2pip, py_list, pip_list = get_pip_list(docker_image)
             
         # py2pip = (py_path, py_vers, main_vers, pip_path, pip_vers)
@@ -541,16 +541,16 @@ def pull_docker_image(docker_image, instance_url=None):
 
             if output == '':
                 print('Failed')
-                pass
+                return('')
             else:
                 print('Success')
-                pass
+                return(docker_image)
         else:
             print('Unable to download {}'.format(docker_image))
-            pass
+            return('')
         
     else:
-        pass
+        return(docker_image)
 
 
 def dict_2_pandas(data):
