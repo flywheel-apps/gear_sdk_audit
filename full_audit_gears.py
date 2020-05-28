@@ -517,6 +517,7 @@ def generate_list(manifest_dir):
 
 def pull_docker_image(docker_image, instance_url=None):
     
+    print('Pulling Docker image {}'.format(docker_image))
     cmd = ['sudo', 'docker', 'pull', docker_image]
     r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
     r.wait()
@@ -525,10 +526,25 @@ def pull_docker_image(docker_image, instance_url=None):
     error = str(r.stderr.read().rstrip())
 
     if output == '':
+        print('Failed')
+        
         if instance_url:
+            print('Trying from site URL')
             base, name = docker_image.split('/')
             docker_image = '/'.join([instance_url,name])
-            print('retrying with {}.format(docker_image')
+            print('retrying with {}'.format(docker_image))
+            cmd = ['sudo', 'docker', 'pull', docker_image]
+            r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+            r.wait()
+            output = str(r.stdout.read().rstrip())
+            error = str(r.stderr.read().rstrip())
+
+            if output == '':
+                print('Failed')
+                pass
+            else:
+                print('Success')
+                pass
         else:
             print('Unable to download {}'.format(docker_image))
             pass
@@ -582,7 +598,7 @@ def exchange_main():
 
 def docker_login_to_instance(instance_url, instance_email, instance_api):
     
-    
+    print('logging in to {}'.format(instance_url))
     cmd = ['sudo', 'docker', 'login', instance_url, '-u', instance_email,'-p',instance_api]
     r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
     r.wait()
@@ -591,6 +607,7 @@ def docker_login_to_instance(instance_url, instance_email, instance_api):
     error = str(r.stderr.read().rstrip())
     
     if output == 'Login Succeeded':
+        print('Success"')
         pass
     else:
         print(error)
@@ -616,7 +633,7 @@ def site_main():
         master_dict[site] = {}
         
         try:
-            docker_login_to_instance(site_url,site_email,site_api)
+            docker_login_to_instance(site_url, site_email, site_api)
         except Exception as e:
             print('ERROR LOGGING IN TO {}'.format(site_url))
             print(e)
