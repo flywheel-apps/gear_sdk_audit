@@ -17,6 +17,8 @@ import glob
 import pathlib
 import pprint
 
+import site_list as sl
+
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
 pwd = '/home/davidparker/Documents/gear_audit/gear_sdk_audit'
 work_dir = os.path.join(pwd,'workdir')
@@ -602,7 +604,7 @@ def site_main():
     
     refresh = False
 
-
+    site_list = sl.get_site_list()
     
     master_dict = {}
     for site, credentials in site_list.items():
