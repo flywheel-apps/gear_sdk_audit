@@ -279,6 +279,7 @@ def find_gear_in_other_site(gear_name, gear_vers, master_dict):
                 if site_gears[gear_name]['gear-version'] == gear_vers:
                     print('Found gear {} v{} in {}'.format(gear_name, gear_vers, prev_site))
                     prev_dict = site_gears[gear_name]
+                    found = True
                     return(found, prev_dict)
     return(found, prev_dict)
 
