@@ -654,8 +654,10 @@ def site_main():
     
     previous_run = os.path.join(work_dir, 'previous_instance_master_json.json')
     if os.path.exists(previous_run):
-        with open(previous_run,'r') as j:
+        print('Found previous run, loading...')
+        with open(previous_run, 'r') as j:
             master_dict = json.load(j)
+        print('...Done')
     else:
         master_dict = {}
         
@@ -685,7 +687,8 @@ def site_main():
         if site not in master_dict:
             data = generate_list_from_instance(gear_dict, site, site_url, master_dict)
             master_dict[site] = data
-        
+        else:
+            print('{} in master_dict, skipping'.format(site))
         # Save after every site
         with open(os.path.join(work_dir, 'instance_master_json.json'), 'w') as fp:
             json.dump(master_dict, fp)
