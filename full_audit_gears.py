@@ -667,7 +667,7 @@ def site_main():
         site_api = credentials[2]
         
         fw = flywheel.Client(site_api)
-        master_dict[site] = {}
+        
         
         try:
             docker_login_to_instance(site_url, site_email, site_api)
@@ -685,6 +685,7 @@ def site_main():
 
         # Generate a list from the instance gear list
         if site not in master_dict:
+            master_dict[site] = {}
             data = generate_list_from_instance(gear_dict, site, site_url, master_dict)
             master_dict[site] = data
         else:
