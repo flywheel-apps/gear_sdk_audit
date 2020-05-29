@@ -270,6 +270,18 @@ def full_pip_freeze(docker_image, pip):
 
 
 
+def find_gear_in_other_site(gear_name, gear_vers, master_dict):
+    found = False
+    prev_dict = {}
+    for prev_site, site_gears in master_dict.items():
+        if gear_name in site_gears.keys():
+            if 'gear-version' in site_gears[gear_name].keys():
+                if site_gears[gear_name]['gear-version'] == gear_vers:
+                    print('Found gear {} v{} in {}'.format(gear_name, gear_vers, prev_site))
+                    prev_dict = site_gears[gear_name]
+                    return(prev_dict)
+
+            
 
 
 
@@ -281,7 +293,7 @@ def get_install_date(gear_name, gear_dict):
 
     return(date)
 
-def generate_list_from_instance(gear_dict, site, instance_url):
+def generate_list_from_instance(gear_dict, site, instance_url, master_dict):
     os.makedirs(work_dir, exist_ok=True)
     # Initialize my Data Dict
     
@@ -312,6 +324,13 @@ def generate_list_from_instance(gear_dict, site, instance_url):
         gear_name = gear.gear['name']
         gear_label = gear.gear['label']
         gear_version = gear.gear['version']
+        
+        found, previous_dict = find_gear_in_other_site(gear_name, gear_version, master_dict)
+        if found:
+            site_dict[gear_name] = previous_dict
+            continue
+            
+        
         
         if 'custom' in gear.gear and gear.gear['custom'] is not None:
             if 'docker-image' in gear.gear['custom']:
@@ -633,7 +652,13 @@ def site_main():
 
     site_list = sl.get_site_list()
     
-    master_dict = {}
+    previous_run = os.path.join(work_dir, 'previous_instance_master_json.json')
+    if os.path.exists(previous_run):
+        with open(previous_run,'r') as j:
+            master_dict = json.load(j)
+    else:
+        master_dict = {}
+        
     for site, credentials in site_list.items():
         site_url = credentials[0]
         site_email = credentials[1]
@@ -657,8 +682,9 @@ def site_main():
         # Generate a list from the exchange files
 
         # Generate a list from the instance gear list
-        data = generate_list_from_instance(gear_dict, site, site_url)
-        master_dict[site] = data
+        if site not in master_dict:
+            data = generate_list_from_instance(gear_dict, site, site_url, master_dict)
+            master_dict[site] = data
         
         # Save after every site
         with open(os.path.join(work_dir, 'instance_master_json.json'), 'w') as fp:
