@@ -313,10 +313,13 @@ def generate_list_from_instance(gear_dict, site, instance_url):
         gear_label = gear.gear['label']
         gear_version = gear.gear['version']
         
-        if 'docker-image' in gear.gear['custom']:
-            docker_image = gear.gear['custom']['docker-image']
-        elif 'gear-builder' in gear.gear['custom'] and 'image' in gear.gear['custom']['gear-builder']:
-            docker_image = gear.gear['custom']['gear-builder']['image']
+        if 'custom' in gear.gear and gear.gear['custom'] is not None:
+            if 'docker-image' in gear.gear['custom']:
+                docker_image = gear.gear['custom']['docker-image']
+            elif 'gear-builder' in gear.gear['custom'] and 'image' in gear.gear['custom']['gear-builder']:
+                docker_image = gear.gear['custom']['gear-builder']['image']
+            else:
+                docker_image = 'unknown'
         else:
             docker_image = 'unknown'
             
