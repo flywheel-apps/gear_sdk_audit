@@ -1,5 +1,66 @@
 # gear_sdk_audit
 
+Make sure you have a decent amount of free space (~50Gb), as large docker images will likely need to be pulled onto your machine temporarily.
+
+
+This code performs a gear audit on a set of instances, or on the flywheel gear exchange. 
+The audit looks at docker images and records information about the gear such as version, sdk-enabled, python versions, and any pip-installed packages for each python version. 
+
+First, the gears in a site/exchange directory are identified.  One by one, each gear is audited. 
+The manifest is examined to see if an api-key is being used (indicating SDK-enabled gear). 
+Then the docker image is pulled, and the environment PATH is searched for any pips.  If none are found, a generic
+"pip","pip2", and "pip3" are tried, mostly for shits and giggles, but it never works
+I don't think.
+
+Then the code looks for all python versions in that image's PATH , and matches them
+by version to previously mentioned pips also found in the docker image.  If a
+python does not have a matching pip, then the python is skipped and no information
+is stored on it.  Only pythons with pips are used so that "pip freeze" can be
+called.  If there are multiple pips that match a python, all possible matches are
+listed.
+
+The python version, pip version, and pip freeze are documented along with other pieces of information. 
+The resulting json file follows the following format:
+
+```json
+{
+	"<Instance Name>": {
+		"(gear name)": {
+			"gear-name": (gear name),
+			"gear-label": (gear label),
+			"custom-docker-image": (Docker Image),
+			"gear-version": "",
+			"site": "<Instance Name>",
+			"api-enabled": (True / False),
+			"found-manifest": "",
+			"Python_Dirs": [(List of all python directories)],
+			"Pip_Dirs": [(List of all pip directories)],
+			"Pythons": {
+				"<Python_1>": {
+					"python_dir": (Directory this python is in ),
+					"python_version": (Full version of this python),
+					"pips": {
+						"<Pip1 associated with this python>": {
+							"freeze": {
+								"<package1>": "<version>",
+								"<package2>": "<version>",
+								...
+							},
+							"pip_dir": (directory this pip is at),
+							"pip_version": (version of this pip
+						}
+								...(may be multiple pips associated with this python)
+					}
+				}
+					...(may be multiple pythons associated with this docker image)
+			}
+		},
+		...(may be multiple gears at this site)
+	}
+	...(may be multiple sites in this run)
+}
+```
+
 # How to run
 
 This gear is not fully automatic.  First decide if you want to run on instances or on the exchange.
@@ -55,6 +116,10 @@ This file is imported and called in "instance_audit_gears.py".
 
 
 ## Exchange:
-For the exchange, you only need to verify 
+For the exchange, you only need to verify that the exchange repo wed address is correct (set at the top of the exchange_audit_gears.py file, just after the imports.)
+This repo will automatically be downloaded to the working directory.  This one is actually fairly automatic, and as long as the directory structure of the exchange repo doesn't change, it should pretty much just work automatically. 
+
+## Support:
+Contact davidparker@flywheel.io for support issues.  Sometimes this thing feels like it's held together with duct tape and bubble gum, so there are probably some issues. 
 
 
