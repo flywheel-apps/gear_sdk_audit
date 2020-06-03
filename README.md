@@ -41,9 +41,11 @@ def get_site_list():
                       '<Username On Instance>',
                       '<API Key For Instance>>']}
                       
+    return(site_list)
+                      
 ```
 
-In this example, there are three instances.  Each instance is given a human friendly name (<Instance Name 1,2,3>) which will be used in the json file as the key for that instance.  This name does not have to match anything from flywheel, you can use any name you'd like, as long as it will help you identify the different sites later.  
+In this example, there are three instances.  You can list as many or as few as you want.  Each instance is given a human friendly name (<Instance Name 1,2,3>) which will be used in the json file as the key for that instance.  This name does not have to match anything from flywheel, you can use any name you'd like, as long as it will help you identify the different sites later.  
 Each instance name is a key in the site_list dictionary.  The value with each key must be a list with three elements, in this order:
 1. The instance url
 1. Your username exactly as it appears on that instance
