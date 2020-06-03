@@ -22,7 +22,7 @@ listed.
 The python version, pip version, and pip freeze are documented along with other pieces of information. 
 The resulting json file follows the following format:
 
-```json
+```
 {
 	"<Instance Name>": {
 		"(gear name)": {
