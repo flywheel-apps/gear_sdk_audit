@@ -16,10 +16,12 @@ import numpy as np
 import glob
 import pathlib
 import pprint
-
+from pathlib import Path
 
 exchange_repo = 'https://github.com/flywheel-io/exchange.git'
 pwd = '/home/davidparker/Documents/gear_audit/gear_sdk_audit'
+pwd = os.getcwd()
+
 work_dir = os.path.join(pwd, 'workdir')
 
 def download_repo(refresh):
@@ -184,6 +186,29 @@ def get_pip_list(docker_image):
 
 
 
+def get_os_verions(docker_image):
+    """
+    This function looks for pips in a python environment.  If none are found, a generic
+    "pip","pip2", and "pip3" are tried, mostly for shits and giggles, but it never works
+    I don't think.
+    """
+    # First try bash crawl (won't work with alpine)
+    cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti',
+           '--entrypoint=/bin/bash', '-v', '{}/commands:/tmp/my_commands'.format(pwd),
+           docker_image, '/tmp/my_commands/find_os_version.sh']
+
+    print(' '.join(cmd))
+    r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+    r.wait()
+    output = str(r.stdout.read())
+
+    print('\n\noutput:')
+    print(output)
+    output = output.split('\n')
+    return output
+
+
+
 def full_pip_freeze(docker_image, pip):
     """
     for a given pip/docker image combo, performs a full pip freeze and stores the result
@@ -269,7 +294,7 @@ def get_install_date(gear_name, gear_dict):
 
 
 
-def generate_list_from_exchange(manifest_dir, master_dict):
+def generate_list_from_exchange(manifest_dir, main_dict):
     """
     Generate a list of sites (flywheel, scitran, stanford, etc) based on folders in the
     exchange, and populate them with the manifests in that folder.  Then go into each
@@ -288,9 +313,10 @@ def generate_list_from_exchange(manifest_dir, master_dict):
         print('\n'+root+'\n')
 
         site = os.path.split(root)[-1]
-        if site in master_dict:
+        if site in main_dict:
             print('Already collected for {}'.format(site))
             continue
+        main_dict[site] = {}
         
         for file in files:
             
@@ -320,7 +346,7 @@ def generate_list_from_exchange(manifest_dir, master_dict):
                     gear_version = mn['version']
 
                     found, previous_dict = find_gear_in_other_site(gear_name, gear_version,
-                                                                   master_dict)
+                                                                   main_dict)
                     if found:
                         site_dict[gear_name] = previous_dict
                         continue
@@ -336,51 +362,56 @@ def generate_list_from_exchange(manifest_dir, master_dict):
                     
                     #gear_date = get_install_date(gear_name, gear_dict)
 
-                    py2pip, py_list, pip_list = get_pip_list(docker_image)
-                    # py2pip = (py_path, py_vers, main_vers, pip_path, pip_vers)
-                    # py_list: (p, full_python_vers, mainv)
-                    # pip_list: (pip, pip_vers)
-                    
+                    #py2pip, py_list, pip_list = get_pip_list(docker_image)
+                    os_version = get_os_verions(docker_image)
+                    # os version = ['os name', 'os version']
+
                     full_py_list = []
                     full_pip_list = []
                     data_dict['Pythons'] = {}
-                    for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
-                        
-                        if pypath not in full_py_list:
-                            full_py_list.append(pypath)
-                        if pippath not in full_pip_list:
-                            full_pip_list.append(pippath)
+                    data_dict['os'] = {}
+                    # for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
+                    #
+                    #     if pypath not in full_py_list:
+                    #         full_py_list.append(pypath)
+                    #     if pippath not in full_pip_list:
+                    #         full_pip_list.append(pippath)
+                    #
+                    #     if pippath == '':
+                    #         package_vers_dict = 'Error Extracting Pip Version'
+                    #     else:
+                    #         pip_vers, package_vers_dict = full_pip_freeze(docker_image, pippath)
+                    #
+                    #     print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
+                    #
+                    #     #data_dict['Pythons'] = {}
+                    #     py_name = 'python_{}'.format(pyvers)
+                    #     if not py_name in data_dict['Pythons']:
+                    #         data_dict['Pythons'][py_name] = {}
+                    #     data_dict['Pythons'][py_name]['python_dir'] = pypath
+                    #     data_dict['Pythons'][py_name]['python_version'] = pyvers
+                    #
+                    #     if not 'pips' in data_dict['Pythons'][py_name]:
+                    #         data_dict['Pythons'][py_name]['pips'] = {}
+                    #
+                    #     pip_name = 'pip_{}'.format(pipvers)
+                    #     i = 'a'
+                    #     while pip_name in data_dict['Pythons'][py_name]['pips']:
+                    #         pip_name = '{}_{}'.format(pip_name, i)
+                    #         i = chr(ord(i[0])+1)
+                    #
+                    #     data_dict['Pythons'][py_name]['pips'][pip_name] = {}
+                    #     data_dict['Pythons'][py_name]['pips'][pip_name]['freeze'] = package_vers_dict
+                    #     data_dict['Pythons'][py_name]['pips'][pip_name]['pip_dir'] = pippath
+                    #     data_dict['Pythons'][py_name]['pips'][pip_name]['pip_version'] = pipvers
 
-                        if pippath == '':
-                            package_vers_dict = 'Error Extracting Pip Version'
-                        else:
-                            pip_vers, package_vers_dict = full_pip_freeze(docker_image, pippath)
-                            
-                        print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
-                        
-                        #data_dict['Pythons'] = {}
-                        py_name = 'python_{}'.format(pyvers)
-                        if not py_name in data_dict['Pythons']:
-                            data_dict['Pythons'][py_name] = {}
-                        data_dict['Pythons'][py_name]['python_dir'] = pypath
-                        data_dict['Pythons'][py_name]['python_version'] = pyvers
-                        
-                        if not 'pips' in data_dict['Pythons'][py_name]:
-                            data_dict['Pythons'][py_name]['pips'] = {}
-                        
-                        pip_name = 'pip_{}'.format(pipvers)
-                        i = 'a'
-                        while pip_name in data_dict['Pythons'][py_name]['pips']:
-                            pip_name = '{}_{}'.format(pip_name, i)
-                            i = chr(ord(i[0])+1)
-                            
-                        data_dict['Pythons'][py_name]['pips'][pip_name] = {}
-                        data_dict['Pythons'][py_name]['pips'][pip_name]['freeze'] = package_vers_dict
-                        data_dict['Pythons'][py_name]['pips'][pip_name]['pip_dir'] = pippath
-                        data_dict['Pythons'][py_name]['pips'][pip_name]['pip_version'] = pipvers
 
-                        
-                        
+                    #for os_name, os_number in os_version:
+                    for os_name in os_version:
+                        data_dict['os']['name'] = os_name
+                        #data_dict['os']['version'] = os_number
+
+
                     data_dict['Python_Dirs'] = full_py_list
                     data_dict['Pip_Dirs'] = full_pip_list
                     data_dict['gear-name'] = gear_name
@@ -399,15 +430,16 @@ def generate_list_from_exchange(manifest_dir, master_dict):
 
             except Exception as e:
                 print('Unable to extract info from {}'.format(os.path.join(root, file)))
-                #raise(e)
+                raise(e)
                 print(e)
-        
-        master_dict[site] = site_dict
-        # Save after every site
-        with open(os.path.join(work_dir, 'master_json.json'), 'w') as fp:
-            json.dump(master_dict, fp)
+
+            print(site)
+            main_dict[site].update(site_dict)
+            # Save after every site
+            with open(os.path.join(work_dir, 'main_json.json'), 'w') as fp:
+                json.dump(main_dict, fp)
             
-    return master_dict
+    return main_dict
 
 
 def exchange_main():
