@@ -448,7 +448,6 @@ def generate_list_from_exchange(manifest_dir, main_dict):
 def exchange_main():
 
     refresh = False
-
     json_out = os.path.join(work_dir, 'exchange_master_json.json')
     if os.path.exists(json_out):
         print('Found previous run, loading...')
