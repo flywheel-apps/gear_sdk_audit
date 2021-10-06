@@ -362,7 +362,7 @@ def generate_list_from_exchange(manifest_dir, main_dict):
                     
                     #gear_date = get_install_date(gear_name, gear_dict)
 
-                    #py2pip, py_list, pip_list = get_pip_list(docker_image)
+                    py2pip, py_list, pip_list = get_pip_list(docker_image)
                     os_version = get_os_verions(docker_image)
                     # os version = ['os name', 'os version']
 
@@ -370,40 +370,40 @@ def generate_list_from_exchange(manifest_dir, main_dict):
                     full_pip_list = []
                     data_dict['Pythons'] = {}
                     data_dict['os'] = {}
-                    # for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
-                    #
-                    #     if pypath not in full_py_list:
-                    #         full_py_list.append(pypath)
-                    #     if pippath not in full_pip_list:
-                    #         full_pip_list.append(pippath)
-                    #
-                    #     if pippath == '':
-                    #         package_vers_dict = 'Error Extracting Pip Version'
-                    #     else:
-                    #         pip_vers, package_vers_dict = full_pip_freeze(docker_image, pippath)
-                    #
-                    #     print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
-                    #
-                    #     #data_dict['Pythons'] = {}
-                    #     py_name = 'python_{}'.format(pyvers)
-                    #     if not py_name in data_dict['Pythons']:
-                    #         data_dict['Pythons'][py_name] = {}
-                    #     data_dict['Pythons'][py_name]['python_dir'] = pypath
-                    #     data_dict['Pythons'][py_name]['python_version'] = pyvers
-                    #
-                    #     if not 'pips' in data_dict['Pythons'][py_name]:
-                    #         data_dict['Pythons'][py_name]['pips'] = {}
-                    #
-                    #     pip_name = 'pip_{}'.format(pipvers)
-                    #     i = 'a'
-                    #     while pip_name in data_dict['Pythons'][py_name]['pips']:
-                    #         pip_name = '{}_{}'.format(pip_name, i)
-                    #         i = chr(ord(i[0])+1)
-                    #
-                    #     data_dict['Pythons'][py_name]['pips'][pip_name] = {}
-                    #     data_dict['Pythons'][py_name]['pips'][pip_name]['freeze'] = package_vers_dict
-                    #     data_dict['Pythons'][py_name]['pips'][pip_name]['pip_dir'] = pippath
-                    #     data_dict['Pythons'][py_name]['pips'][pip_name]['pip_version'] = pipvers
+                    for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
+
+                        if pypath not in full_py_list:
+                            full_py_list.append(pypath)
+                        if pippath not in full_pip_list:
+                            full_pip_list.append(pippath)
+
+                        if pippath == '':
+                            package_vers_dict = 'Error Extracting Pip Version'
+                        else:
+                            pip_vers, package_vers_dict = full_pip_freeze(docker_image, pippath)
+
+                        print('\n{} \t {} \t {}'.format(gear_name, docker_image, pip_vers))
+
+                        #data_dict['Pythons'] = {}
+                        py_name = 'python_{}'.format(pyvers)
+                        if not py_name in data_dict['Pythons']:
+                            data_dict['Pythons'][py_name] = {}
+                        data_dict['Pythons'][py_name]['python_dir'] = pypath
+                        data_dict['Pythons'][py_name]['python_version'] = pyvers
+
+                        if not 'pips' in data_dict['Pythons'][py_name]:
+                            data_dict['Pythons'][py_name]['pips'] = {}
+
+                        pip_name = 'pip_{}'.format(pipvers)
+                        i = 'a'
+                        while pip_name in data_dict['Pythons'][py_name]['pips']:
+                            pip_name = '{}_{}'.format(pip_name, i)
+                            i = chr(ord(i[0])+1)
+
+                        data_dict['Pythons'][py_name]['pips'][pip_name] = {}
+                        data_dict['Pythons'][py_name]['pips'][pip_name]['freeze'] = package_vers_dict
+                        data_dict['Pythons'][py_name]['pips'][pip_name]['pip_dir'] = pippath
+                        data_dict['Pythons'][py_name]['pips'][pip_name]['pip_version'] = pipvers
 
 
                     #for os_name, os_number in os_version:
