@@ -407,7 +407,10 @@ def generate_list_from_exchange(manifest_dir, main_dict):
 
 
                     #for os_name, os_number in os_version:
-                    for os_name in os_version:
+                    print(os_version)
+
+                    for os_name, os_number in os_version:
+                        print(os_name)
                         data_dict['os']['name'] = os_name
                         #data_dict['os']['version'] = os_number
 
