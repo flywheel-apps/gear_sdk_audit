@@ -308,11 +308,18 @@ def generate_list_from_instance(gear_dict, site, instance_url, master_dict):
             py2pip = []
         else:
             docker_image = pull_docker_image(docker_image, instance_url)
+
             py2pip, py_list, pip_list = get_pip_list(docker_image)
+            os_version = get_os_verions(docker_image)
+
 
         full_py_list = []
         full_pip_list = []
         data_dict['Pythons'] = {}
+        data_dict['os'] = {}
+        print(os_version)
+        data_dict['os']['name'] = os_version[0]
+
         for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
 
             if pypath not in full_py_list:
