@@ -36,6 +36,29 @@ def download_repo(refresh):
     return exchange_dir
 
 
+def get_os_verions(docker_image):
+    """
+    This function looks for pips in a python environment.  If none are found, a generic
+    "pip","pip2", and "pip3" are tried, mostly for shits and giggles, but it never works
+    I don't think.
+    """
+    # First try bash crawl (won't work with alpine)
+    cmd = ['sudo', 'docker', 'run', '--env', "LD_LIBRARY_PATH=''", '--rm', '-ti',
+           '--entrypoint=/bin/bash', '-v', '{}/commands:/tmp/my_commands'.format(pwd),
+           docker_image, '/tmp/my_commands/find_os_version.sh']
+
+    print(' '.join(cmd))
+    r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
+    r.wait()
+    output = str(r.stdout.read())
+
+    print('\n\noutput:')
+    print(output)
+    output = output.split('\n')
+    return output
+
+
+
 def match_pip_to_py(pip_versions, docker_image):
     """
     This looks for all python versions in a docker image PATH variable, and matches them
