@@ -66,7 +66,7 @@ def match_pip_to_py(pip_versions, docker_image):
         m = re.match(exp, result)
         if not m == None:
             p = pathlib.Path(result.rstrip())
-            print("{} poiting to {}".format(p, p.resolve()))
+            print("{} pointing to {}".format(p, p.resolve()))
             p = p.resolve().as_posix()
 
             cmd = [
