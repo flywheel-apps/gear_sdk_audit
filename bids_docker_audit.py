@@ -28,8 +28,8 @@ def generate_list_from_docker(username, master_dict, last_updated=3):
     """
     repos = get_list_of_repos(username)
     #docker_login()
+    repo_dict = defaultdict()
     for repo in repos['results']:
-        repo_dict = defaultdict()
         if repo["name"] in master_dict:
             print("Already collected for {}".format(repo["name"]))
             continue
@@ -91,7 +91,7 @@ def generate_list_from_docker(username, master_dict, last_updated=3):
 
         master_dict[username] = repo_dict
         # Save after every site
-        with open(os.path.join(work_dir, "master_json.json"), "w") as fp:
+        with open(os.path.join(work_dir, "master_json.json"), "w+") as fp:
             json.dump(master_dict, fp)
 
     return master_dict

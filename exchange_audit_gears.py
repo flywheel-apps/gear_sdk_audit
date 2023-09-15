@@ -56,6 +56,7 @@ def match_pip_to_py(pip_versions, docker_image):
     output = str(r.stdout.read())
     print(output)
     output = output.split("\n")
+    output = list(set(output))
 
     exp = ".*python([0-9]?\.?[0-9]?[0-9]?\.?[0-9]?[0-9]?)$"
     py_list = []
@@ -150,6 +151,7 @@ def get_pip_list(docker_image):
     print(output)
 
     output = output.split("\n")
+    output = list(set(output))
 
     exp = ".*pip([0-9]?\.?[0-9]?[0-9]?\.?[0-9]?[0-9]?)$"
     pip_list = []
