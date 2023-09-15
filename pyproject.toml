@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "os-py-ver-audit"
+version = "0.1.0"
+description = ""
+authors = ["Brianne Sutton <21200969+neurosutton@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+beautifulsoup4 = "^4.12"
+requests = "^2.31.0"
+pytest = "^7.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
