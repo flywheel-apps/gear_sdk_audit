@@ -1,7 +1,6 @@
 import subprocess as sp
 
 import requests
-from bs4 import BeautifulSoup
 from commands.manage_sys import create_temp_dir
 
 url = "https://hub.docker.com/u/bids"
