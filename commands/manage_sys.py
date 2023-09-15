@@ -1,12 +1,12 @@
 import os
 import shutil
 import subprocess as sp
-import tempfile
+from pathlib import Path
 
 
 def clean_up_docker(tmp_dir, docker_image):
     try:
-        cmd = ["sudo", "docker", "image", "rm", docker_image]
+        cmd = ["docker", "image", "rm", docker_image]
         print(" ".join(cmd))
         r = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True)
         r.wait()
@@ -17,9 +17,10 @@ def clean_up_docker(tmp_dir, docker_image):
         print(f"Temporary directory '{tmp_dir}' removed")
 
 
-def create_temp_dir():
+def create_temp_dir(work_dir):
     # Create a temporary directory
-    tmp_dir = tempfile.mkdtemp()
+    tmp_dir = Path(work_dir)/'tmp_docker_img'
+    tmp_dir.mkdir(parents=True, exist_ok=True)
     print(f"Temporary directory created: {tmp_dir}")
 
     # Change the current working directory to the temporary directory

@@ -37,13 +37,11 @@ def match_pip_to_py(pip_versions, docker_image):
 
     # First get path pythons:
     cmd = [
-        "sudo",
         "docker",
         "run",
         "--env",
         "LD_LIBRARY_PATH=''",
         "--rm",
-        "-ti",
         "--entrypoint=/bin/bash",
         "-v",
         "{}/commands:/tmp/my_commands".format(pwd),
@@ -71,13 +69,11 @@ def match_pip_to_py(pip_versions, docker_image):
             p = p.resolve().as_posix()
 
             cmd = [
-                "sudo",
                 "docker",
                 "run",
                 "--env",
                 "LD_LIBRARY_PATH=''",
                 "--rm",
-                "-ti",
                 "--entrypoint={}".format(p),
                 docker_image,
                 "--version",
@@ -133,13 +129,11 @@ def get_pip_list(docker_image):
     """
     # First try bash crawl (won't work with alpine)
     cmd = [
-        "sudo",
         "docker",
         "run",
         "--env",
         "LD_LIBRARY_PATH=''",
         "--rm",
-        "-ti",
         "--entrypoint=/bin/bash",
         "-v",
         "{}/commands:/tmp/my_commands".format(pwd),
@@ -176,13 +170,11 @@ def get_pip_list(docker_image):
     pip_vers_list = []
     for pip in pip_list:
         cmd = [
-            "sudo",
             "docker",
             "run",
             "--env",
             "LD_LIBRARY_PATH=''",
             "--rm",
-            "-ti",
             "--entrypoint={}".format(pip),
             docker_image,
             "--version",
@@ -224,13 +216,11 @@ def full_pip_freeze(docker_image, pip):
     try:
 
         cmd = [
-            "sudo",
             "docker",
             "run",
             "--env",
             "LD_LIBRARY_PATH=''",
             "--rm",
-            "-ti",
             "--entrypoint={}".format(pip),
             docker_image,
             "freeze",
