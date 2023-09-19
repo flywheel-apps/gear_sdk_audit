@@ -116,7 +116,7 @@ def match_pip_to_py(pip_versions, docker_image):
                 new_py2pip = (py_path, py_vers, main_vers, pip_path, pip_vers)
                 if new_py2pip not in py_2_pip:
                     py_2_pip.append(new_py2pip)
-
+    print("Matching python and pip versions:")
     pprint.pprint(py_2_pip)
 
     return (py_2_pip, py_list)

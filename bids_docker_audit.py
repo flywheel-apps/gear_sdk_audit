@@ -45,7 +45,9 @@ def generate_list_from_docker(username, master_dict, last_updated=3):
 
         full_py_list = []
         full_pip_list = []
-        data_dict["Pythons"] = {}
+        # Record the python versions that are installed, regardless of if
+        # they are matched to a pip installation.
+        data_dict["Pythons"] = {'raw_versions': py_list}
         for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
 
             if pypath not in full_py_list:
@@ -92,7 +94,7 @@ def generate_list_from_docker(username, master_dict, last_updated=3):
         master_dict[username] = repo_dict
         # Save after every site
         with open(os.path.join(work_dir, "master_json.json"), "w+") as fp:
-            json.dump(master_dict, fp)
+            json.dump(master_dict, fp, indent=4, sort_keys=True)
 
     return master_dict
 
