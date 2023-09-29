@@ -19,7 +19,7 @@ work_dir = os.path.join(pwd, "workdir")
 Path(work_dir).mkdir(parents=True, exist_ok=True)
 
 
-def generate_list_from_docker(username, master_dict, repos: List = [], last_updated=3):
+def generate_list_from_docker(username, master_dict, repo=None, last_updated=3):
     """
     Generate a list of sites (flywheel, scitran, stanford, etc) based on folders in the
     exchange, and populate them with the manifests in that folder.  Then go into each
@@ -28,8 +28,7 @@ def generate_list_from_docker(username, master_dict, repos: List = [], last_upda
     and perform a pip freeze, storing the results. PHEW.
 
     """
-    if not repos:
-        repos = get_list_of_repos(username)
+    repos = get_list_of_repos(username, repo)
     # docker_login()
     repo_dict = defaultdict()
     for repo in repos["results"]:
@@ -105,7 +104,7 @@ def generate_list_from_docker(username, master_dict, repos: List = [], last_upda
     return master_dict
 
 
-def docker_main(username="bids", repos: List = []):
+def docker_main(username="bids", repo=None):
     refresh = False
 
     json_out = os.path.join(work_dir, f"docker_{username}_master_json.json")
@@ -118,7 +117,7 @@ def docker_main(username="bids", repos: List = []):
         master_dict = {}
 
     # Generate a list from the exchange files
-    data = generate_list_from_docker(username, master_dict, repos)
+    data = generate_list_from_docker(username, master_dict, repo)
 
     # Save after every site
     with open(json_out, "w") as fp:

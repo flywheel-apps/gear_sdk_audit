@@ -13,9 +13,12 @@ def docker_login():
         print("Successfully logged in to Docker Hub.")
     except sp.CalledProcessError as e:
         print(f"Error logging in to Docker Hub: {e.output}")
-def get_list_of_repos(username="bids"):
+def get_list_of_repos(username="bids", repo=None):
     # Send a GET request to the Docker Hub API to retrieve the list of repositories
-    url = f"https://hub.docker.com/v2/repositories/{username}"
+    if repo:
+        url = f"https://hub.docker.com/v2/repositories/{username}/{repo}"
+    else:
+        url = f"https://hub.docker.com/v2/repositories/{username}"
     response = requests.get(url)
     repositories = response.json()
     return repositories
