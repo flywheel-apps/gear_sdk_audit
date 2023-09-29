@@ -2,22 +2,24 @@
 
 import json
 import os
-from datetime import datetime
-from dateutil.relativedelta import *
-from pathlib import Path
-
-from exchange_audit_gears import full_pip_freeze, get_pip_list
-from commands.manage_sys import clean_up_docker
-from commands.scrape_dockerhub import get_list_of_repos, pull_repo, docker_login
 from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import List
+
+from dateutil.relativedelta import *
+
 from commands.find_os_details import get_os_details
+from commands.manage_sys import clean_up_docker
+from commands.scrape_dockerhub import docker_login, get_list_of_repos, pull_repo
+from exchange_audit_gears import full_pip_freeze, get_pip_list
 
 pwd = os.getcwd()
 work_dir = os.path.join(pwd, "workdir")
 Path(work_dir).mkdir(parents=True, exist_ok=True)
 
 
-def generate_list_from_docker(username, master_dict, last_updated=3):
+def generate_list_from_docker(username, master_dict, repos: List = [], last_updated=3):
     """
     Generate a list of sites (flywheel, scitran, stanford, etc) based on folders in the
     exchange, and populate them with the manifests in that folder.  Then go into each
@@ -26,28 +28,32 @@ def generate_list_from_docker(username, master_dict, last_updated=3):
     and perform a pip freeze, storing the results. PHEW.
 
     """
-    repos = get_list_of_repos(username)
-    #docker_login()
+    if not repos:
+        repos = get_list_of_repos(username)
+    # docker_login()
     repo_dict = defaultdict()
-    for repo in repos['results']:
+    for repo in repos["results"]:
         if repo["name"] in master_dict:
             print("Already collected for {}".format(repo["name"]))
             continue
         update_threshold = datetime.now() - relativedelta(years=last_updated)
-        if datetime.strptime(repo['last_updated'], '%Y-%m-%dT%H:%M:%S.%fZ') < update_threshold:
+        if (
+            datetime.strptime(repo["last_updated"], "%Y-%m-%dT%H:%M:%S.%fZ")
+            < update_threshold
+        ):
             print(f"{repo['name']} is considered to be unmaintained.")
             continue
         # Initialize
-        data_dict = {"repo":repo["name"]}
+        data_dict = {"repo": repo["name"]}
         tmp_dir, docker_image = pull_repo(repo, work_dir)
-        data_dict['pretty_name'] = get_os_details(docker_image)
+        data_dict["pretty_name"] = get_os_details(docker_image)
         py2pip, py_list, pip_list = get_pip_list(docker_image)
 
         full_py_list = []
         full_pip_list = []
         # Record the python versions that are installed, regardless of if
         # they are matched to a pip installation.
-        data_dict["Pythons"] = {'raw_versions': py_list}
+        data_dict["Pythons"] = {"raw_versions": py_list}
         for pypath, pyvers, mainpy, pippath, pipvers in py2pip:
 
             if pypath not in full_py_list:
@@ -99,8 +105,7 @@ def generate_list_from_docker(username, master_dict, last_updated=3):
     return master_dict
 
 
-def docker_main(username="bids"):
-
+def docker_main(username="bids", repos: List = []):
     refresh = False
 
     json_out = os.path.join(work_dir, f"docker_{username}_master_json.json")
@@ -113,7 +118,7 @@ def docker_main(username="bids"):
         master_dict = {}
 
     # Generate a list from the exchange files
-    data = generate_list_from_docker(username, master_dict)
+    data = generate_list_from_docker(username, master_dict, repos)
 
     # Save after every site
     with open(json_out, "w") as fp:
